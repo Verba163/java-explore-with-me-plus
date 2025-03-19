@@ -1,12 +1,11 @@
 package ru.practicum.ewm.client;
 
-import ru.practicum.dto.ParamDto;
-import ru.practicum.dto.ParamHitDto;
-import ru.practicum.dto.StatDto;
+import ru.practicum.dto.StatHitDto;
+import ru.practicum.dto.StatViewDto;
 
 public interface StatClient {
 
-    void hit(ParamHitDto paramHitDto);
+    void hit(StatHitDto paramHitDto);
 
-    StatDto getStat(ParamDto paramDto);
+    StatViewDto getStat(ParamDto paramDto);
 }
