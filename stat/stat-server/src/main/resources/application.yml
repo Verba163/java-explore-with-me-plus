@@ -22,3 +22,6 @@ logging:
       orm.jpa.JpaTransactionManager: WARN
       transaction: WARN
       transaction.interceptor: WARN
+
+server:
+  port: 9090
