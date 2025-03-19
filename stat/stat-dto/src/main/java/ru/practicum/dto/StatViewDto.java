@@ -14,5 +14,7 @@ public class StatViewDto {
 
     String uri;
 
+    Long hits;
+
 }
 
