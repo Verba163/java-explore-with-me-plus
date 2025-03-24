@@ -33,6 +33,13 @@ services:
       - SPRING_DATASOURCE_USERNAME=main
       - SPRING_DATASOURCE_PASSWORD=main
 
- #
- # ewm-db:
- #   image: postgres:16.1
+
+  ewm-db:
+    image: postgres:16.1
+    container_name: postgres-ewm-service-db
+    ports:
+      - "6543:5432"
+    environment:
+      - POSTGRES_PASSWORD=service
+      - POSTGRES_USER=service
+      - POSTGRES_DB=ewm-stats
