@@ -1,8 +1,11 @@
-package ru.practicum.ewm.config.model;
+package ru.practicum.ewm.compilation.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.practicum.ewm.events.model.Events;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -10,16 +13,19 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "compilations")
+public class Compilation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "name")
+    String title;
+
+    boolean pinned;
+
     String name;
 
-    @Column(name = "email")
-    String email;
+    List<Events> events;
+
 }
