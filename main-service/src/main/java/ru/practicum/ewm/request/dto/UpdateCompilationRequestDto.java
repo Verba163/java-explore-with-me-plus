@@ -10,7 +10,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RequestUpdateResultDto {
-    List<ParticipationRequestDto> confirmedRequests;
-    List<ParticipationRequestDto> rejectedRequests;
+public class UpdateCompilationRequestDto {
+
+    String title;
+
+    boolean pinned;
+
+    List<Long> events;
 }

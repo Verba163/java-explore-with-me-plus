@@ -1,4 +1,4 @@
-package ru.practicum.ewm.user.dto;
+package ru.practicum.ewm.request.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,9 +8,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserDto {
+public class NewUserRequestDto {
 
-    Long id;
     String name;
     String email;
 }
+
+
