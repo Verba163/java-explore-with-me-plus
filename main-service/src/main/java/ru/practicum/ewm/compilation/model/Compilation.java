@@ -3,7 +3,7 @@ package ru.practicum.ewm.compilation.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.ewm.events.model.Events;
+import ru.practicum.ewm.events.model.Event;
 
 import java.util.List;
 
@@ -20,12 +20,18 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    @Column(nullable = false)
     String title;
 
+    @Column(nullable = false)
     boolean pinned;
 
-    String name;
-
-    List<Events> events;
+    @ManyToMany
+    @JoinTable(
+            name = "compilation_events",
+            joinColumns = @JoinColumn(name = "compilation_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id")
+    )
+    List<Event> events;
 
 }

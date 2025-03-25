@@ -15,12 +15,13 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "events")
-public class Events {
+public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    @Column(nullable = false)
     String title;
 
     Long views;
@@ -31,7 +32,6 @@ public class Events {
     @JoinColumn(name = "category_id")
     Category category;
 
-    @Column(name = "description")
     String description;
 
     @ManyToOne
