@@ -18,8 +18,6 @@ public class EventShortDto {
 
     String annotation;
 
-    String description;
-
     String title;
 
     Long views;

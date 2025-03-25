@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewEventDto {
 
-    Long id;
-
     String title;
 
     String description;
