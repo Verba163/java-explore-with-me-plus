@@ -22,28 +22,4 @@ public class CompilationMapper {
                 .build();
     }
 
-    public static Compilation toCompilation(CompilationDto compilationDto) {
-
-        return Compilation.builder()
-                .id(compilationDto.getId())
-                .title(compilationDto.getTitle())
-                .pinned(compilationDto.isPinned())
-                .events(compilationDto.getEvents() != null ?
-                        compilationDto.getEvents().stream()
-                                .map(EventMapper::toEventEntity)
-                                .collect(Collectors.toList()) : null)
-                .build();
-    }
-
-    public static Compilation toCompilationEntity(NewCompilationDto newCompilationDto) {
-
-        return Compilation.builder()
-                .title(newCompilationDto.getTitle())
-                .pinned(newCompilationDto.isPinned())
-                .events(newCompilationDto.getEvents() != null ?
-                        newCompilationDto.getEvents().stream()
-                                .map(EventMapper::toEventEntity)
-                                .collect(Collectors.toList()) : null)
-                .build();
-    }
 }

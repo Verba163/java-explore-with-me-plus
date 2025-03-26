@@ -1,6 +1,7 @@
 package ru.practicum.ewm.user.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "public")
 public class User {
 
     @Id
@@ -20,6 +21,7 @@ public class User {
     @Column(nullable = false)
     String name;
 
+    @Email
     @Column(nullable = false, unique = true)
     String email;
 }
