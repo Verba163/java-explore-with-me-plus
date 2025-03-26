@@ -1,8 +1,5 @@
 package ru.practicum.ewm.events.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -11,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.events.model.Location;
+import ru.practicum.ewm.events.model.StateAction;
 
 import java.time.LocalDateTime;
 
@@ -19,35 +17,27 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class NewEventDto {
-    @NotBlank
+public class UpdateEventUserRequest {
     @Size(min = 3, max = 120)
     String title;
 
-    @NotBlank
     @Size(min = 20, max = 7000)
     String description;
 
-    @NotBlank
     @Size(min = 20, max = 2000)
     String annotation;
 
-    @NotNull
-    Integer category;
+    Long category;
 
-    @NotNull
     Location location;
 
-    @Builder.Default
-    Boolean requestModeration = true;
+    Boolean requestModeration;
 
-    @Builder.Default
-    Boolean paid = false;
+    Boolean paid;
 
-    @Builder.Default
-    Integer participantLimit = 0;
+    Long participantLimit;
 
-    @NotNull
-    @JsonFormat
     LocalDateTime eventDate;
+
+    StateAction stateAction;
 }

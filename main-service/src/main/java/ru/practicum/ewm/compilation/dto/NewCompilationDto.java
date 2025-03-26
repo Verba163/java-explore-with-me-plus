@@ -1,8 +1,11 @@
 package ru.practicum.ewm.compilation.dto;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.ewm.events.dto.EventShortDto;
 
 import java.util.List;
 

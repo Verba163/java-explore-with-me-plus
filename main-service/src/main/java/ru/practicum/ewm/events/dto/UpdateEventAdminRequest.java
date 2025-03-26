@@ -1,6 +1,10 @@
-package ru.practicum.ewm.request.dto;
+package ru.practicum.ewm.events.dto;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.events.model.Location;
 import ru.practicum.ewm.events.model.State;
@@ -12,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UpdateEventAdminRequestDto {
+public class UpdateEventAdminRequest {
 
     String title;
 
@@ -24,14 +28,14 @@ public class UpdateEventAdminRequestDto {
 
     Location location;
 
-    boolean requestModeration;
+    Boolean requestModeration;
 
-    boolean paid;
+    Boolean paid;
 
     Long participantLimit;
 
     LocalDateTime eventDate;
 
-    State state;
+    State stateAction;
 
 }
