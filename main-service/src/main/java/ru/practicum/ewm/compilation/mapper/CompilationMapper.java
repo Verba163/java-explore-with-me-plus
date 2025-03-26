@@ -28,10 +28,11 @@ public class CompilationMapper {
                 .id(compilationDto.getId())
                 .title(compilationDto.getTitle())
                 .pinned(compilationDto.isPinned())
-                .events(compilationDto.getEvents() != null ?
-                        compilationDto.getEvents().stream()
-                                .map(EventMapper::toEventEntity)
-                                .collect(Collectors.toList()) : null)
+                // TODO Implement EventShortDto -> Event
+//                .events(compilationDto.getEvents() != null ?
+//                        compilationDto.getEvents().stream()
+//                                .map(EventMapper::toEventEntity)
+//                                .collect(Collectors.toList()) : null)
                 .build();
     }
 
@@ -40,10 +41,11 @@ public class CompilationMapper {
         return Compilation.builder()
                 .title(newCompilationDto.getTitle())
                 .pinned(newCompilationDto.isPinned())
-                .events(newCompilationDto.getEvents() != null ?
-                        newCompilationDto.getEvents().stream()
-                                .map(EventMapper::toEventEntity)
-                                .collect(Collectors.toList()) : null)
+                // TODO Implement Long -> Event or other fetching data for events
+//                .events(newCompilationDto.getEvents() != null ?
+//                        newCompilationDto.getEvents().stream()
+//                                .map(EventMapper::toEventEntity)
+//                                .collect(Collectors.toList()) : null)
                 .build();
     }
 }
