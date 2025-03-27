@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.ewm.events.model.EventPublishState;
+import ru.practicum.ewm.events.model.AdminAction;
 import ru.practicum.ewm.events.model.Location;
 
 import java.time.LocalDateTime;
@@ -17,25 +17,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateEventAdminRequest {
-
-    String title;
-
-    String description;
-
-    String annotation;
-
-    Long category;
-
-    Location location;
-
-    Boolean requestModeration;
-
-    Boolean paid;
-
-    Long participantLimit;
-
-    LocalDateTime eventDate;
-
-    EventPublishState stateAction;
-
+    private String title;
+    private String description;
+    private String annotation;
+    private Long category;
+    private Location location;
+    private Boolean requestModeration;
+    private Boolean paid;
+    private Integer participantLimit;
+    private LocalDateTime eventDate;
+    private AdminAction stateAction;
 }

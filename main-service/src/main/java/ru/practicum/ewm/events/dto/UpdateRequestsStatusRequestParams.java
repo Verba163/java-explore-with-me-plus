@@ -8,5 +8,5 @@ import lombok.Getter;
 public class UpdateRequestsStatusRequestParams {
     private Long userId;
     private Long eventId;
-    private  EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest;
+    private EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest;
 }

@@ -133,7 +133,7 @@ public class EventsController {
     public List<EventFullDto> searchEvents(
             @RequestParam(required = false) List<Long> users,
             @RequestParam(required = false) List<String> states,
-            @RequestParam(required = false) List<Integer> categories,
+            @RequestParam(required = false) List<Long> categories,
 
             @DateTimeFormat(pattern = "${spring.jackson.date-format}")
             @RequestParam(required = false) LocalDateTime rangeStart,
