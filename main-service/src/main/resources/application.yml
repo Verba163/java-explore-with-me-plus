@@ -20,7 +20,7 @@ spring:
 
   datasource:
     driverClassName: "org.postgresql.Driver"
-    url: "jdbc:postgresql://ewm-db:5432/ewm-main"
+    url: "jdbc:postgresql://ewm-db:6543/ewm-main"
     username: "service"
     password: "service"
 
