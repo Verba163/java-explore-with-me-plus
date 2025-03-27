@@ -1,6 +1,77 @@
 package ru.practicum.ewm.events.mapper;
 
+import org.springframework.stereotype.Component;
+import ru.practicum.ewm.events.dto.EventFullDto;
+import ru.practicum.ewm.events.dto.EventShortDto;
+import ru.practicum.ewm.events.dto.NewEventDto;
+import ru.practicum.ewm.events.model.Event;
+import ru.practicum.ewm.events.model.Location;
+
+@Component
 public class EventMapper {
+    public static Event fromNewEventDto(NewEventDto newEventDto) {
+        return Event.builder()
+                .build();
+    }
+
+    public static EventFullDto toEventFullDto(EventDtoParams eventFullDtoParams) {
+        Event event = eventFullDtoParams.getEvent();
+
+        return EventFullDto.builder()
+                .id(event.getId())
+                .annotation(event.getAnnotation())
+                .category(eventFullDtoParams.getCategoryDto())
+                .confirmedRequests(eventFullDtoParams.getConfirmedRequests())
+                .createdOn(event.getCreatedOn())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .initiator(eventFullDtoParams.getInitiator())
+                .location(new Location(event.getLocationLat(), event.getLocationLon()))
+                .paid(event.getPaid())
+                .participantLimit(event.getParticipantLimit())
+                .publishedOn(event.getPublishedOn())
+                .requestModeration(event.getRequestModeration())
+                .title(event.getTitle())
+                .state(event.getEventPublishState())
+                .views(eventFullDtoParams.getViews())
+                .build();
+    }
+
+    public static EventShortDto toEventShortDto(EventDtoParams eventDtoParams) {
+        Event event = eventDtoParams.getEvent();
+
+        return EventShortDto.builder()
+                .id(event.getId())
+                .annotation(event.getAnnotation())
+                .category(eventDtoParams.getCategoryDto())
+                .confirmedRequests(eventDtoParams.getConfirmedRequests())
+                .eventDate(event.getEventDate())
+                .initiator(eventDtoParams.getInitiator())
+                .paid(event.getPaid())
+                .title(event.getTitle())
+                .views(eventDtoParams.getViews())
+                .build();
+    }
+
+//    public class EventFullDto {
+//        private Long id;
+//        private String annotation;
+//        private CategoryDto category;
+//        private Long confirmedRequests;
+//        private LocalDateTime createdOn;
+//        private String description;
+//        private LocalDateTime eventDate;
+//        private UserShortDto initiator;
+//        private Location location;
+//        private Boolean paid;
+//        private Long participantLimit;
+//        private LocalDateTime publishedOn;
+//        private Boolean requestModeration;
+//        private String title;
+//        private EventPublishState state;
+//        private Long views;
+//    }
+
 
 //    public static EventFullDto toEventFullDto(Event event) {
 //
