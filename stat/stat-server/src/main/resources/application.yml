@@ -2,7 +2,7 @@ spring:
   main.banner-mode: OFF
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       format_sql: true
       jdbc.time_zone: UTC
   sql:
