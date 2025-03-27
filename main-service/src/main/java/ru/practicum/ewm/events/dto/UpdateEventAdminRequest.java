@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import ru.practicum.ewm.events.model.EventPublishState;
 import ru.practicum.ewm.events.model.Location;
-import ru.practicum.ewm.events.model.State;
 
 import java.time.LocalDateTime;
 
@@ -36,6 +36,6 @@ public class UpdateEventAdminRequest {
 
     LocalDateTime eventDate;
 
-    State stateAction;
+    EventPublishState stateAction;
 
 }

@@ -1,5 +1,6 @@
 package ru.practicum.ewm.events.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
@@ -11,14 +12,21 @@ import ru.practicum.ewm.events.dto.SearchPublicEventsRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventRequestParams;
 import ru.practicum.ewm.events.dto.UpdateRequestsStatusRequestParams;
+import ru.practicum.ewm.events.storage.EventsRepository;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EventsServiceImpl implements EventsService {
+    private final EventsRepository eventsRepository;
+
     @Override
     public List<EventShortDto> getEventsCreatedByUser(EventsForUserRequestParams eventsForUserRequestParams) {
+
+
+
         return List.of();
     }
 

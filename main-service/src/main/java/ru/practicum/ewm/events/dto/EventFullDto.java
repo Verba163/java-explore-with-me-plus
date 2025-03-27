@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.category.dto.CategoryDto;
+import ru.practicum.ewm.events.model.EventPublishState;
 import ru.practicum.ewm.events.model.Location;
-import ru.practicum.ewm.events.model.State;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
@@ -46,7 +46,7 @@ public class EventFullDto {
 
     Long confirmedRequests;
 
-    State state;
+    EventPublishState eventPublishState;
 
     Location location;
 
