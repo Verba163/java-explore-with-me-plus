@@ -37,4 +37,11 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleUserAccessException(final UserAccessException e) {
         return new ErrorResponse("ACCESS DENIED", e.getMessage());
     }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleUserAccessException(final ConflictException e) {
+        return new ErrorResponse("CONFLICT ERROR", e.getMessage());
+    }
+
 }
