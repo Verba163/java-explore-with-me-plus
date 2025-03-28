@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.user.dto.NewUserRequestDto;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
@@ -62,14 +61,14 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserById(Long userId) {
         return userRepository.findById(userId)
                 .map(UserMapper::toUserDto)
-                .orElseThrow(() -> new NotFoundException(String.format("User with id %d not found", userId)));
+                .orElseThrow(() -> new RuntimeException(String.format("User with id %d not found", userId)));
     }
 
     @Transactional
     @Override
     public void deleteUser(Long userId) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("User with id %d not found", userId)));
+                .orElseThrow(() -> new RuntimeException(String.format("User with id %d not found", userId)));
         userRepository.deleteById(userId);
     }
 }
