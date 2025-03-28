@@ -14,10 +14,10 @@ import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
+import ru.practicum.ewm.error.exception.ValidationException;
 import ru.practicum.ewm.exception.ConflictException;
-import ru.practicum.ewm.exception.IllegalArgumentException;
-import ru.practicum.ewm.exception.ItemNotAvailableException;
-import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.error.exception.IllegalArgumentException;
+import ru.practicum.ewm.error.exception.NotFoundException;
 
 import java.util.Collections;
 import java.util.List;
@@ -70,11 +70,11 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
         log.info("Creating category: {}", newCategoryDto.getName());
         if (newCategoryDto.getName() == null || newCategoryDto.getName().isBlank()) {
-            throw new ItemNotAvailableException("Category name can't be null or blank");
+            throw new ValidationException("Category name can't be null or blank");
         }
 
         if (newCategoryDto.getName().length() > 50) {
-            throw new ItemNotAvailableException("Category name can't be bigger then 50");
+            throw new ValidationException("Category name can't be bigger then 50");
         }
 
         Category category = CategoryMapper.toCategoryEntity(newCategoryDto);
@@ -116,7 +116,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         if (newCategoryDto.getName().length() > 50) {
-            throw new ItemNotAvailableException("Category name can't be bigger then 50");
+            throw new ValidationException("Category name can't be bigger then 50");
         }
 
         log.info("Updating category id={} with new name: {}", categoryId, newCategoryDto.getName());
