@@ -1,4 +1,4 @@
-package ru.practicum.ewm.events;
+package ru.practicum.ewm.events.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -29,7 +29,6 @@ import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.events.dto.UpdateRequestsStatusRequestParams;
-import ru.practicum.ewm.events.exceptions.EventCreationException;
 import ru.practicum.ewm.events.service.EventsService;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.util.Util;
@@ -78,7 +77,6 @@ public class EventsController {
     public EventFullDto createEvent(@PathVariable Long userId,
                                     @Valid @RequestBody NewEventDto newEventDto) {
         log.info("Request: create new event from user id={}, newEventDto={}", userId, newEventDto);
-        checkEventDate(newEventDto.getEventDate());
         return eventsService.createEvent(userId, newEventDto);
     }
 
@@ -96,11 +94,6 @@ public class EventsController {
                                     @PathVariable Long eventId,
                                     @Valid @RequestBody UpdateEventUserRequest updateEventUserRequest) {
         log.info("Request: update event id={} by user id={}, data={}", eventId, userId, updateEventUserRequest);
-
-        if (updateEventUserRequest.getEventDate() != null) {
-            checkEventDate(updateEventUserRequest.getEventDate());
-        }
-
         UpdateEventRequestParams updateEventRequestParams = UpdateEventRequestParams.builder()
                 .userId(userId)
                 .eventId(eventId)
@@ -140,7 +133,7 @@ public class EventsController {
     public List<EventFullDto> searchEvents(
             @RequestParam(required = false) List<Long> users,
             @RequestParam(required = false) List<String> states,
-            @RequestParam(required = false) List<Integer> categories,
+            @RequestParam(required = false) List<Long> categories,
 
             @DateTimeFormat(pattern = "${spring.jackson.date-format}")
             @RequestParam(required = false) LocalDateTime rangeStart,
@@ -229,19 +222,6 @@ public class EventsController {
             statClient.hit(statHitDto);
         } catch (Exception e) {
             log.error("Fail to hit stat. Error: {}. \nStack trace:\n{}", e.getMessage(), e.getStackTrace());
-        }
-    }
-
-    private static void checkEventDate(LocalDateTime eventDateTime) {
-        LocalDateTime now = Util.getNowTruncatedToSeconds();
-
-        if (eventDateTime.isBefore(now.plusHours(2))) {
-            throw new EventCreationException(
-                    String.format(
-                            "Field: eventDate. Error: должно содержать дату-вермя, не ранее чем через 2 часа. Value: %s",
-                            eventDateTime
-                    )
-            );
         }
     }
 }

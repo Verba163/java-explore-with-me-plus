@@ -11,7 +11,7 @@ import java.util.List;
 public class SearchEventsRequestParams {
     private List<Long> users;
     private List<String> states;
-    private List<Integer> categories;
+    private List<Long> categories;
     private LocalDateTime rangeStart;
     private LocalDateTime rangeEnd;
     private Integer from;
