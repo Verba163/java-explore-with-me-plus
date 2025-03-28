@@ -29,6 +29,7 @@ import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.events.dto.UpdateRequestsStatusRequestParams;
+import ru.practicum.ewm.events.model.SortingEvents;
 import ru.practicum.ewm.events.service.EventsService;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.util.Util;
@@ -170,7 +171,7 @@ public class EventsController {
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> searchPublicEvents(
             @RequestParam(required = false) String text,
-            @RequestParam(required = false) List<Integer> categories,
+            @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) Boolean paid,
 
             @DateTimeFormat(pattern = "${spring.jackson.date-format}")
@@ -180,7 +181,7 @@ public class EventsController {
             @RequestParam(required = false) LocalDateTime rangeEnd,
 
             @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,
-            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) SortingEvents sort,
             @RequestParam(required = false, defaultValue = "0") Integer from,
             @RequestParam(required = false, defaultValue = "10") Integer size,
             HttpServletRequest request) {

@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.events.model.Location;
-import ru.practicum.ewm.events.model.StateAction;
+import ru.practicum.ewm.events.model.UserEventAction;
 
 import java.time.LocalDateTime;
 
@@ -33,5 +33,5 @@ public class UpdateEventUserRequest {
     private Boolean paid;
     private Integer participantLimit;
     private LocalDateTime eventDate;
-    private StateAction stateAction;
+    private UserEventAction stateAction;
 }
