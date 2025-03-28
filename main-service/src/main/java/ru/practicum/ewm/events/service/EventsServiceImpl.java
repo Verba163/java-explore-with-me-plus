@@ -30,7 +30,7 @@ import ru.practicum.ewm.events.model.EventPublishState;
 import ru.practicum.ewm.events.model.Location;
 import ru.practicum.ewm.events.model.QEvent;
 import ru.practicum.ewm.events.storage.EventsRepository;
-import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.error.exception.NotFoundException;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.repository.UserRepository;
@@ -302,7 +302,7 @@ public class EventsServiceImpl implements EventsService {
 
     private void checkUserRights(long userId, Event event) {
         if (!event.getInitiator().getId().equals(userId)) {
-            throw new ru.practicum.ewm.exception.IllegalArgumentException(
+            throw new IllegalArgumentException(
                     String.format("Юзер id=%d не имеет доступа к событию id=%d.", userId, event.getId())
             );
         }
