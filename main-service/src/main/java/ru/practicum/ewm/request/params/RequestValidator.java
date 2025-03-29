@@ -6,8 +6,8 @@ import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.error.exception.DataIntegrityViolationException;
 import ru.practicum.ewm.events.model.Event;
 import ru.practicum.ewm.events.model.EventPublishState;
+import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.request.repository.RequestRepository;
-import ru.practicum.ewm.user.model.User;
 
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -16,7 +16,6 @@ public class RequestValidator {
     Event event;
     Long userId;
     Long eventId;
-    User requester;
     RequestRepository requestRepository;
 
     public void validate() {
@@ -33,7 +32,8 @@ public class RequestValidator {
     }
 
     private void validateParticipantLimit() {
-        if (event.getParticipantLimit() > 0 && requestRepository.countByEventId(eventId) >= event.getParticipantLimit()) {
+        Integer confirmedParticipants = requestRepository.countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
+        if (event.getParticipantLimit() > 0 && confirmedParticipants >= event.getParticipantLimit()) {
             throw new DataIntegrityViolationException("You can not create requests to Full filled events");
         }
     }

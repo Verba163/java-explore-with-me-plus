@@ -45,7 +45,7 @@ public class RequestServiceImpl implements RequestService {
                 ? RequestStatus.CONFIRMED
                 : RequestStatus.PENDING;
 
-        RequestValidator validator = new RequestValidator(event, userId, eventId, requester, requestRepository);
+        RequestValidator validator = new RequestValidator(event, userId, eventId, requestRepository);
         validator.validate();
 
         Request newRequest = Request.builder()
