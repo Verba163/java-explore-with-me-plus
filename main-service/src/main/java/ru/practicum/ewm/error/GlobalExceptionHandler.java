@@ -11,11 +11,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.ewm.error.exception.AccessException;
-import ru.practicum.ewm.error.exception.DataIntegrityViolationException;
+import ru.practicum.ewm.error.exception.*;
 import ru.practicum.ewm.error.exception.IllegalArgumentException;
-import ru.practicum.ewm.error.exception.NotFoundException;
-import ru.practicum.ewm.error.exception.ValidationException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -133,6 +130,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+        log.warn("409 {}", e.getMessage(), e);
+
+        return ApiError.builder()
+                .message("CONFLICT")
+                .reason("Integrity constraint has been violated.")
+                .status(HttpStatus.CONFLICT.toString())
+                .errors(List.of(e.getMessage()))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictException(final ConflictException e) {
         log.warn("409 {}", e.getMessage(), e);
 
         return ApiError.builder()
