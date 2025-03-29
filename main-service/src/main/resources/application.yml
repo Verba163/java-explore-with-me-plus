@@ -4,7 +4,7 @@ application:
 
 stat-service:
   protocol: http
-  host: localhost
+  host: stats-server
   port: 9090
 
 management:
@@ -38,5 +38,5 @@ logging:
       transaction: WARN
       transaction.interceptor: WARN
 
-  server:
-    port: 8080
+server:
+  port: 8080
