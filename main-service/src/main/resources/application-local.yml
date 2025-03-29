@@ -1,3 +1,12 @@
+application:
+  name: "ewm-main-service"
+  date-time-format: yyyy-MM-dd HH:mm:ss
+
+stat-service:
+  protocol: http
+  host: localhost
+  port: 9090
+
 spring:
   main.banner-mode: OFF
   jpa:
@@ -11,9 +20,9 @@ spring:
 
   datasource:
     driverClassName: "org.postgresql.Driver"
-    url: "jdbc:postgresql://localhost:6542/ewm-stats"
-    username: "stat"
-    password: "stat"
+    url: "jdbc:postgresql://localhost:5432/ewm-main"
+    username: "service"
+    password: "service"
 
 logging:
   level:
@@ -23,5 +32,5 @@ logging:
       transaction: WARN
       transaction.interceptor: WARN
 
-server:
-  port: 9090
+  server:
+    port: 8080

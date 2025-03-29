@@ -48,7 +48,7 @@ public class StatClientImpl implements StatClient {
 
     @Override
     public List<StatViewDto> getStat(LocalDateTime start, LocalDateTime end,
-                                     ArrayList<String> uris, Boolean unique) {
+                                     List<String> uris, Boolean unique) {
         try {
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
                     .path("/stats")
