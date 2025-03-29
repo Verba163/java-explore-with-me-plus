@@ -8,7 +8,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import ru.practicum.ewm.events.model.Event;
 
 import java.util.List;
-import java.util.Map;
 
 public interface EventsRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
     Page<Event> findAllByInitiatorIdIs(Long userId, Pageable pageable);
@@ -32,5 +31,5 @@ public interface EventsRepository extends JpaRepository<Event, Long>, QuerydslPr
        WHERE e.id IN (?1)
        GROUP BY e.id
        """)
-    Map<Long, Long> getConfirmedRequestsForEvents(List<Long> eventIds);
+    List<List<Long>> getConfirmedRequestsForEvents(List<Long> eventIds);
 }

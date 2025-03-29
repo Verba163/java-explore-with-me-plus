@@ -1,14 +1,24 @@
 package ru.practicum.ewm.error;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.ewm.error.exception.AccessException;
+import ru.practicum.ewm.error.exception.DataIntegrityViolationException;
 import ru.practicum.ewm.error.exception.IllegalArgumentException;
-import ru.practicum.ewm.error.exception.*;
+import ru.practicum.ewm.error.exception.NotFoundException;
+import ru.practicum.ewm.error.exception.ValidationException;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +47,7 @@ public class GlobalExceptionHandler {
         log.warn("400 {}", e.getMessage(), e);
 
         List<String> errorMessages = e.getBindingResult().getFieldErrors().stream()
-                .map(fieldError -> fieldError.getDefaultMessage())
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.toList());
 
         return ApiError.builder()
@@ -48,6 +58,54 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleConstraintViolationExceptionException(final ConstraintViolationException e) {
+        log.warn("400 {}", e.getMessage(), e);
+
+        List<String> errors = e.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .toList();
+
+        return ApiError.builder()
+                .message("BAD_REQUEST")
+                .reason("Constraint violation")
+                .status(HttpStatus.BAD_REQUEST.toString())
+                .errors(errors)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(TransactionSystemException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleTransactionSystemException(final TransactionSystemException e) {
+        log.warn("400 {}", e.getMessage(), e);
+
+        return ApiError.builder()
+                .message(e.getMessage())
+                .reason("Constraint violation")
+                .status(HttpStatus.BAD_REQUEST.toString())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleMissingServletRequestParameterException(final MissingServletRequestParameterException e) {
+        log.warn("400 {}", e.getMessage());
+
+        return ApiError.builder()
+                .message(e.getMessage())
+                .reason("Constraint violation")
+                .status(HttpStatus.BAD_REQUEST.toString())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+
+
+
 
     @ExceptionHandler(AccessException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -100,6 +158,23 @@ public class GlobalExceptionHandler {
                 .reason("Incorrectly made request.")
                 .status(HttpStatus.BAD_REQUEST.toString())
                 .errors(List.of(e.getMessage()))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handleAnyException(final Exception e) {
+        log.warn("500 {}", e.getMessage(), e);
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+
+        return ApiError.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.toString())
+                .reason("Incorrectly made request.")
+                .message(e.getMessage())
+                .stackTrace(sw.toString())
                 .timestamp(LocalDateTime.now())
                 .build();
     }

@@ -25,7 +25,7 @@ public class EventsViewsService {
                 .collect(Collectors.toMap(Function.identity(), this::createURIForEventId));
         List<String> uris = eventUriMap.values().stream()
                 .toList();
-        LocalDateTime start = LocalDateTime.MIN;
+        LocalDateTime start = LocalDateTime.of(1900, 1, 1, 0, 0);
         LocalDateTime end = Util.getNowTruncatedToSeconds();
         List<StatViewDto> stat = List.of();
 

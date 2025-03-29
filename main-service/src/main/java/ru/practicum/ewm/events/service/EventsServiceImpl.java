@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
+import ru.practicum.ewm.error.exception.NotFoundException;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
@@ -33,7 +34,11 @@ import ru.practicum.ewm.events.model.SortingEvents;
 import ru.practicum.ewm.events.storage.EventsRepository;
 import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
+import ru.practicum.ewm.request.mapper.RequestMapper;
+import ru.practicum.ewm.request.model.Request;
+import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.mapper.UserMapper;
+import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 import ru.practicum.ewm.util.Util;
 
@@ -42,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -50,6 +56,7 @@ public class EventsServiceImpl implements EventsService {
     private final EventsRepository eventsRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final RequestRepository requestRepository;
 
     private final EventsViewsService eventsViewsService;
 
@@ -71,9 +78,11 @@ public class EventsServiceImpl implements EventsService {
     @Override
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         checkEventDateBeforeHours(newEventDto.getEventDate());
-        checkUserExisting(userId);
+        User user = getUserWithCheck(userId);
         Category category = getCategoryWithCheck(newEventDto.getCategory());
         Event event = EventMapper.fromNewEventDto(newEventDto, category);
+        event.setCreatedOn(Util.getNowTruncatedToSeconds());
+        event.setInitiator(user);
         return createEventFullDto(eventsRepository.save(event));
     }
 
@@ -114,10 +123,10 @@ public class EventsServiceImpl implements EventsService {
     public List<ParticipationRequestDto> getRequestsForEvent(Long userId, Long eventId) {
         Event event = getEventWithCheck(eventId);
         checkUserRights(userId, event);
-
-        // TODO get requests
-
-        return List.of();
+        List<Request> requests = requestRepository.findByEventId(eventId);
+        return requests.stream()
+                .map(RequestMapper::toRequestDto)
+                .toList();
     }
 
     @Override
@@ -164,7 +173,7 @@ public class EventsServiceImpl implements EventsService {
         }
 
         BooleanExpression condition = conditions.stream()
-                .reduce(Expressions.asBoolean(true), BooleanExpression::and);
+                .reduce(Expressions.asBoolean(true).isTrue(), BooleanExpression::and);
         List<Event> resultEvents = eventsRepository.findAll(condition, page).stream()
                 .toList();
         return createEventFullDtoList(resultEvents);
@@ -193,7 +202,7 @@ public class EventsServiceImpl implements EventsService {
 
                 LocalDateTime now = Util.getNowTruncatedToSeconds();
 
-                if (now.plusHours(1).isBefore(event.getEventDate())) {
+                if (now.plusHours(1).isAfter(event.getEventDate())) {
                     throw new IllegalArgumentException("Нельзя опубликовать событие, до которого осталось менее 1 часа.");
                 }
 
@@ -247,7 +256,7 @@ public class EventsServiceImpl implements EventsService {
         }
 
         BooleanExpression condition = conditions.stream()
-                .reduce(Expressions.asBoolean(true), BooleanExpression::and);
+                .reduce(Expressions.asBoolean(true).isTrue(), BooleanExpression::and);
         Iterable<Event> resultEvents = eventsRepository.findAll(condition);
         List<Long> resultEventIds = StreamSupport.stream(resultEvents.spliterator(), false)
                 .map(Event::getId)
@@ -271,7 +280,7 @@ public class EventsServiceImpl implements EventsService {
         QEvent event = QEvent.event;
         Event resultEvent = eventsRepository
                 .findOne(event.id.eq(eventId).and(event.eventPublishState.eq(EventPublishState.PUBLISHED)))
-                .orElseThrow(() -> new ConflictException(
+                .orElseThrow(() -> new NotFoundException(
                         String.format("Событие с id=%d не найдено или не является опубликованным.", eventId))
                 );
         return createEventFullDto(resultEvent);
@@ -332,7 +341,8 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private Map<Long, Long> getConfirmedRequestsMap(List<Long> eventIds) {
-        return eventsRepository.getConfirmedRequestsForEvents(eventIds);
+        return eventsRepository.getConfirmedRequestsForEvents(eventIds).stream()
+                .collect(Collectors.toMap(List::getFirst, List::getLast));
     }
 
     private boolean canUserUpdateEvent(Event event) {
@@ -344,6 +354,11 @@ public class EventsServiceImpl implements EventsService {
         if (!userRepository.existsById(userId)) {
             throw new ConflictException(String.format("Юзер id=%d не найден.", userId));
         }
+    }
+
+    private User getUserWithCheck(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ConflictException(String.format("Юзер id=%d не найден.", userId)));
     }
 
     private Category getCategoryWithCheck(long categoryId) {

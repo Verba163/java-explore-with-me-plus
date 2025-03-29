@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -62,6 +63,7 @@ public class Event {
     Boolean paid;
 
     @Column(name = "participant_limit", nullable = false)
+    @Min(0)
     Integer participantLimit;
 
     @Column(name = "request_moderation", nullable = false)
