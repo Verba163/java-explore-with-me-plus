@@ -55,3 +55,10 @@ CREATE TABLE IF NOT EXISTS requests (
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
     FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS compilation_events (
+   event_id BIGINT NOT NULL,
+   compilation_id BIGINT NOT NULL,
+   FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+   FOREIGN KEY (compilation_id) REFERENCES compilations(id) ON DELETE CASCADE
+);

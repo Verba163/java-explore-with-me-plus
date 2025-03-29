@@ -14,10 +14,11 @@ import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
+import ru.practicum.ewm.error.exception.ConflictException;
 import ru.practicum.ewm.error.exception.ValidationException;
-import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.error.exception.IllegalArgumentException;
 import ru.practicum.ewm.error.exception.NotFoundException;
+import ru.practicum.ewm.events.storage.EventsRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    //private final EventsRepository eventsRepository;
+    private final EventsRepository eventsRepository;
 
 
     @Override
@@ -59,9 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto getCategoryById(Long catId) {
         log.info("Fetching category by id: {}", catId);
-        Category category = categoryRepository
-                .findById(catId)
-                .orElseThrow(() -> new NotFoundException("Category with id " + catId + " not found"));
+        Category category = checkAndGetCategory(catId);
 
         return CategoryMapper.toCategoryDto(category);
     }
@@ -91,12 +90,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void deleteCategory(Long catId) {
-        Category category = categoryRepository
-                .findById(catId)
-                .orElseThrow(() -> new NotFoundException("Category with id '" + catId + "' not found"));
-//        if(eventsRepository.findEventsByCategoryId(catId)){
-//            throw new ConflictException("Category with id '" + catId + "' is not empty");
-//        }
+        checkAndGetCategory(catId);
+
+        if (eventsRepository.countByCategoryId(catId) > 0) {
+            throw new ConflictException("Category with id '" + catId + "' is not empty");
+        }
         log.info("Deleting category id: {}", catId);
         categoryRepository.deleteById(catId);
     }
@@ -107,9 +105,7 @@ public class CategoryServiceImpl implements CategoryService {
         Long categoryId = updateCategory.getCatId();
         NewCategoryDto newCategoryDto = updateCategory.getNewCategoryDto();
 
-        Category oldCategory = categoryRepository
-                .findById(categoryId)
-                .orElseThrow(() -> new NotFoundException("Category with id '" + categoryId + "' not found"));
+        Category oldCategory = checkAndGetCategory(updateCategory.getCatId());
 
         if (newCategoryDto.getName() == null || newCategoryDto.getName().isBlank()) {
             throw new IllegalArgumentException("Category name for update can't be null or blank");
@@ -131,5 +127,11 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ConflictException("Cannot update category id " +
                     categoryId + ": name '" + newCategoryDto.getName() + "' already exists");
         }
+    }
+
+    private Category checkAndGetCategory(Long catId) {
+        return categoryRepository
+                .findById(catId)
+                .orElseThrow(() -> new NotFoundException("Category with id '" + catId + "' not found"));
     }
 }

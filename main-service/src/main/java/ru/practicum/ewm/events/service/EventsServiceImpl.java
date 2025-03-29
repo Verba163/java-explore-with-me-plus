@@ -36,7 +36,7 @@ import ru.practicum.ewm.events.model.QEvent;
 import ru.practicum.ewm.events.model.SortingEvents;
 import ru.practicum.ewm.events.model.UserUpdateRequestAction;
 import ru.practicum.ewm.events.storage.EventsRepository;
-import ru.practicum.ewm.exception.ConflictException;
+import ru.practicum.ewm.error.exception.ConflictException;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.Request;
@@ -111,7 +111,7 @@ public class EventsServiceImpl implements EventsService {
         checkUserRights(userId, event);
 
         if (!canUserUpdateEvent(event)) {
-            throw new IllegalArgumentException("Only pending or canceled events can be changed");
+            throw new DataIntegrityViolationException("Only pending or canceled events can be changed");
         }
 
         UpdateEventCommonRequest commonRequest = EventMapper.userUpdateRequestToCommonRequest(updateEventUserRequest);
@@ -240,19 +240,19 @@ public class EventsServiceImpl implements EventsService {
 
             if (stateAction == AdminEventAction.REJECT_EVENT) {
                 if (eventPublishState == EventPublishState.PUBLISHED) {
-                    throw new ValidationException("Нельзя отменить опубликованное событие.");
+                    throw new DataIntegrityViolationException("Нельзя отменить опубликованное событие.");
                 }
 
                 event.setEventPublishState(EventPublishState.CANCELED);
             } else if (stateAction == AdminEventAction.PUBLISH_EVENT) {
                 if (eventPublishState != EventPublishState.PENDING) {
-                    throw new ValidationException("Опубликовать можно только то событие, которое ожидает публикации.");
+                    throw new DataIntegrityViolationException("Опубликовать можно только то событие, которое ожидает публикации.");
                 }
 
                 LocalDateTime now = Util.getNowTruncatedToSeconds();
 
                 if (now.plusHours(1).isAfter(event.getEventDate())) {
-                    throw new ValidationException("Нельзя опубликовать событие, до которого осталось менее 1 часа.");
+                    throw new DataIntegrityViolationException("Нельзя опубликовать событие, до которого осталось менее 1 часа.");
                 }
 
                 event.setEventPublishState(EventPublishState.PUBLISHED);
@@ -382,7 +382,7 @@ public class EventsServiceImpl implements EventsService {
 
     private Event getEventWithCheck(long eventId) {
         return eventsRepository.findById(eventId)
-                .orElseThrow(()-> new ConflictException(String.format("Ивент с id=%d не найден.", eventId)));
+                .orElseThrow(() -> new ConflictException(String.format("Ивент с id=%d не найден.", eventId)));
     }
 
     private void checkUserRights(long userId, Event event) {
