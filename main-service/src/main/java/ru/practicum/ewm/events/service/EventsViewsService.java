@@ -30,7 +30,7 @@ public class EventsViewsService {
         List<StatViewDto> stat = List.of();
 
         try {
-            stat = statClient.getStat(start, end, uris, false);
+            stat = statClient.getStat(start, end, uris, true);
         } catch (Exception e) {
             log.error(
                     "Ошибка при попытке получить статистику. Msg: {}, \nstackTrace: {}",

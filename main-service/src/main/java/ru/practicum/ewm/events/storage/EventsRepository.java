@@ -20,7 +20,7 @@ public interface EventsRepository extends JpaRepository<Event, Long>, QuerydslPr
        LEFT JOIN requests r ON r.event_id = e.id
        GROUP BY e.id
        HAVING e.participant_limit = 0
-            OR SUM(CASE WHEN r.id IS NOT NULL AND r.status = 'CONFIRMED' THEN 1 END) < e.participant_limit
+            OR SUM(CASE WHEN r.id IS NOT NULL AND r.status = 'CONFIRMED' THEN 1 ELSE 0 END) < e.participant_limit
        """)
     List<Long> getAvailableEventIdsByParticipantLimit();
 

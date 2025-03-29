@@ -6,23 +6,26 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
+import ru.practicum.ewm.error.exception.DataIntegrityViolationException;
 import ru.practicum.ewm.error.exception.NotFoundException;
+import ru.practicum.ewm.error.exception.ValidationException;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
-import ru.practicum.ewm.events.dto.EventsForUserRequestParams;
 import ru.practicum.ewm.events.dto.NewEventDto;
-import ru.practicum.ewm.events.dto.SearchEventsRequestParams;
-import ru.practicum.ewm.events.dto.SearchPublicEventsRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventCommonRequest;
-import ru.practicum.ewm.events.dto.UpdateEventRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
-import ru.practicum.ewm.events.dto.UpdateRequestsStatusRequestParams;
+import ru.practicum.ewm.events.dto.parameters.EventsForUserRequestParams;
+import ru.practicum.ewm.events.dto.parameters.SearchEventsRequestParams;
+import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsRequestParams;
+import ru.practicum.ewm.events.dto.parameters.UpdateEventRequestParams;
+import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusRequestParams;
 import ru.practicum.ewm.events.mapper.EventDtoParams;
 import ru.practicum.ewm.events.mapper.EventMapper;
 import ru.practicum.ewm.events.model.AdminEventAction;
@@ -31,11 +34,13 @@ import ru.practicum.ewm.events.model.EventPublishState;
 import ru.practicum.ewm.events.model.Location;
 import ru.practicum.ewm.events.model.QEvent;
 import ru.practicum.ewm.events.model.SortingEvents;
+import ru.practicum.ewm.events.model.UserUpdateRequestAction;
 import ru.practicum.ewm.events.storage.EventsRepository;
 import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.Request;
+import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.model.User;
@@ -52,6 +57,7 @@ import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class EventsServiceImpl implements EventsService {
     private final EventsRepository eventsRepository;
     private final UserRepository userRepository;
@@ -61,6 +67,7 @@ public class EventsServiceImpl implements EventsService {
     private final EventsViewsService eventsViewsService;
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventShortDto> getEventsCreatedByUser(EventsForUserRequestParams eventsForUserRequestParams) {
         Long userId = eventsForUserRequestParams.getUserId();
         Integer from = eventsForUserRequestParams.getFrom();
@@ -87,6 +94,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EventFullDto getEventById(Long userId, Long eventId) {
         Event event = getEventWithCheck(eventId);
         checkUserRights(userId, event);
@@ -120,6 +128,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getRequestsForEvent(Long userId, Long eventId) {
         Event event = getEventWithCheck(eventId);
         checkUserRights(userId, event);
@@ -138,12 +147,52 @@ public class EventsServiceImpl implements EventsService {
         Event event = getEventWithCheck(eventId);
         checkUserRights(userId, event);
 
-        // TODO process request
+        EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(new ArrayList<>())
+                .rejectedRequests(new ArrayList<>())
+                .build();
 
-        return null;
+        UserUpdateRequestAction action = statusUpdateRequest.getStatus();
+        List<Request> requests = requestRepository.findAllById(statusUpdateRequest.getRequestIds());
+        Long confirmedRequests = getConfirmedRequestsMap(List.of(eventId)).get(eventId);
+        Integer participantLimit = event.getParticipantLimit();
+
+        long canConfirmRequestsNumber = participantLimit == 0
+                ? requests.size()
+                : participantLimit - confirmedRequests;
+
+        if (canConfirmRequestsNumber <= 0) {
+            throw new DataIntegrityViolationException(String.format(
+                    "Event id=%d is full for requests.", eventId
+            ));
+        }
+
+        requests.forEach(request -> {
+            if (request.getStatus() != RequestStatus.PENDING) {
+                throw new DataIntegrityViolationException(String.format(
+                        "Request id=%d must have status PENDING.", request.getId()
+                ));
+            }
+        });
+
+        for (Request request : requests) {
+            if (action == UserUpdateRequestAction.REJECTED || canConfirmRequestsNumber <= 0) {
+                request.setStatus(RequestStatus.REJECTED);
+                result.getRejectedRequests().add(RequestMapper.toRequestDto(request));
+                continue;
+            }
+
+            request.setStatus(RequestStatus.CONFIRMED);
+            result.getConfirmedRequests().add(RequestMapper.toRequestDto(request));
+            canConfirmRequestsNumber--;
+        }
+
+        requestRepository.saveAll(requests);
+        return result;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventFullDto> searchEvents(SearchEventsRequestParams searchParams) {
         QEvent event = QEvent.event;
         List<BooleanExpression> conditions = new ArrayList<>();
@@ -191,19 +240,19 @@ public class EventsServiceImpl implements EventsService {
 
             if (stateAction == AdminEventAction.REJECT_EVENT) {
                 if (eventPublishState == EventPublishState.PUBLISHED) {
-                    throw new IllegalArgumentException("Нельзя отменить опубликованное событие.");
+                    throw new ValidationException("Нельзя отменить опубликованное событие.");
                 }
 
                 event.setEventPublishState(EventPublishState.CANCELED);
             } else if (stateAction == AdminEventAction.PUBLISH_EVENT) {
                 if (eventPublishState != EventPublishState.PENDING) {
-                    throw new IllegalArgumentException("Опубликовать можно только то событие, которое ожидает публикации.");
+                    throw new ValidationException("Опубликовать можно только то событие, которое ожидает публикации.");
                 }
 
                 LocalDateTime now = Util.getNowTruncatedToSeconds();
 
                 if (now.plusHours(1).isAfter(event.getEventDate())) {
-                    throw new IllegalArgumentException("Нельзя опубликовать событие, до которого осталось менее 1 часа.");
+                    throw new ValidationException("Нельзя опубликовать событие, до которого осталось менее 1 часа.");
                 }
 
                 event.setEventPublishState(EventPublishState.PUBLISHED);
@@ -215,6 +264,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventFullDto> searchPublicEvents(SearchPublicEventsRequestParams searchParams) {
         QEvent event = QEvent.event;
         List<BooleanExpression> conditions = new ArrayList<>();
@@ -226,11 +276,13 @@ public class EventsServiceImpl implements EventsService {
         }
 
         if (searchParams.getCategories() != null) {
-            conditions.add(event.category.id.in(searchParams.getCategories()));
-        }
+            List<Category> categories = categoryRepository.findAllById(searchParams.getCategories());
 
-        if (searchParams.getPaid() != null) {
-            conditions.add(event.paid.eq(searchParams.getPaid()));
+            if (categories.isEmpty()) {
+                throw new ValidationException("Категории для поиска не существуют.");
+            }
+
+            conditions.add(event.category.id.in(searchParams.getCategories()));
         }
 
         if (searchParams.getOnlyAvailable() != null) {
@@ -276,6 +328,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EventFullDto getPublicEventById(Long eventId) {
         QEvent event = QEvent.event;
         Event resultEvent = eventsRepository
@@ -450,7 +503,7 @@ public class EventsServiceImpl implements EventsService {
         LocalDateTime now = Util.getNowTruncatedToSeconds();
 
         if (eventDateTime.isBefore(now.plusHours(2))) {
-            throw new ConflictException(
+            throw new ValidationException(
                     String.format(
                             "Field: eventDate. Error: должно содержать дату-вермя, не ранее чем через 2 часа. Value: %s",
                             eventDateTime
