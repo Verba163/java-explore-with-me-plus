@@ -13,6 +13,7 @@ import ru.practicum.ewm.user.dto.NewUserRequestDto;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.model.User;
+import ru.practicum.ewm.user.params.UserQueryParams;
 import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.util.List;
@@ -39,19 +40,14 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<UserDto> getAllUsers(List<Long> ids, Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new IllegalArgumentException("""
-                    Parameters 'from' and 'size' can not be less then zero
-                    """);
-        }
+    public List<UserDto> getAllUsers(UserQueryParams params) {
 
-        Pageable pageable = PageRequest.of(from / size, size);
+        Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
 
         Page<User> userPage;
 
-        if (ids != null && !ids.isEmpty()) {
-            userPage = userRepository.findAllByIdIn(ids, pageable);
+        if (params.getIds() != null && !params.getIds().isEmpty()) {
+            userPage = userRepository.findAllByIdIn(params.getIds(), pageable);
         } else {
             userPage = userRepository.findAll(pageable);
         }

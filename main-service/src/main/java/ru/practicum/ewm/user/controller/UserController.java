@@ -4,13 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.user.dto.NewUserRequestDto;
 import ru.practicum.ewm.user.dto.UserDto;
+import ru.practicum.ewm.user.params.UserQueryParams;
 import ru.practicum.ewm.user.service.UserService;
 
 import java.util.List;
+
 
 @Slf4j
 @RestController
@@ -24,14 +25,12 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> getAllUsers(@Valid
-                                     @RequestParam(required = false) List<Long> ids,
-                                     @RequestParam(defaultValue = "0") Integer from,
-                                     @RequestParam(defaultValue = "10") Integer size) {
+    public List<UserDto> getAllUsers(@Valid @ModelAttribute UserQueryParams params) {
 
-        log.debug("Received GET request for all users with ids: {}, from: {}, size: {}", ids, from, size);
+        log.debug("Received GET request for all users with ids: {}, from: {}, size: {}",
+                params.getIds(), params.getFrom(), params.getSize());
 
-        return userService.getAllUsers(ids, from, size);
+        return userService.getAllUsers(params);
 
     }
 
