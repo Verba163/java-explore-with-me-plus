@@ -10,13 +10,13 @@ import java.util.List;
 
 public class CompilationMapper {
 
-    public static CompilationDto toCompilationDto(Compilation compilation, List<EventShortDto> EventShortDtos) {
+    public static CompilationDto toCompilationDto(Compilation compilation, List<EventShortDto> eventShortDtos) {
 
         return CompilationDto.builder()
                 .id(compilation.getId())
                 .title(compilation.getTitle())
                 .pinned(compilation.isPinned())
-                .events(EventShortDtos)
+                .events(eventShortDtos)
                 .build();
     }
 

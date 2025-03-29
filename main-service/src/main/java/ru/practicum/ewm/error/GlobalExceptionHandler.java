@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError MethodArgumentNotValidException(final MethodArgumentNotValidException e) {
+    public ApiError methodArgumentNotValidException(final MethodArgumentNotValidException e) {
         log.warn("400 {}", e.getMessage(), e);
 
         List<String> errorMessages = e.getBindingResult().getFieldErrors().stream()

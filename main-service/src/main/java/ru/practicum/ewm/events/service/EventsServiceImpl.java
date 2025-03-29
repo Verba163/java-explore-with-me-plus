@@ -382,7 +382,7 @@ public class EventsServiceImpl implements EventsService {
 
     private Event getEventWithCheck(long eventId) {
         return eventsRepository.findById(eventId)
-                .orElseThrow(()-> new ConflictException(String.format("Ивент с id=%d не найден.", eventId)));
+                .orElseThrow(() -> new ConflictException(String.format("Ивент с id=%d не найден.", eventId)));
     }
 
     private void checkUserRights(long userId, Event event) {
