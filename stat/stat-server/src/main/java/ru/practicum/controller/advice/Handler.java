@@ -14,11 +14,11 @@ import java.io.StringWriter;
 public class Handler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError handleAnyException(final Exception e, HttpStatus status) {
+    public ApiError handleAnyException(final Exception e) {
         log.warn("500 {}", e.getMessage(), e);
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
-        return new ApiError(status, "Error...", e.getMessage(), sw.toString());
+        return new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Error...", e.getMessage(), sw.toString());
     }
 }

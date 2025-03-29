@@ -3,13 +3,13 @@ package ru.practicum.ewm.events.service;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
-import ru.practicum.ewm.events.dto.EventsForUserRequestParams;
 import ru.practicum.ewm.events.dto.NewEventDto;
-import ru.practicum.ewm.events.dto.SearchEventsRequestParams;
-import ru.practicum.ewm.events.dto.SearchPublicEventsRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
-import ru.practicum.ewm.events.dto.UpdateEventRequestParams;
-import ru.practicum.ewm.events.dto.UpdateRequestsStatusRequestParams;
+import ru.practicum.ewm.events.dto.parameters.EventsForUserRequestParams;
+import ru.practicum.ewm.events.dto.parameters.SearchEventsRequestParams;
+import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsRequestParams;
+import ru.practicum.ewm.events.dto.parameters.UpdateEventRequestParams;
+import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusRequestParams;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 
 import java.util.List;

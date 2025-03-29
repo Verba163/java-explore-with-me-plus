@@ -1,7 +1,8 @@
-package ru.practicum.ewm.events.dto;
+package ru.practicum.ewm.events.dto.parameters;
 
 import lombok.Builder;
 import lombok.Getter;
+import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 
 @Builder(toBuilder = true)
 @Getter

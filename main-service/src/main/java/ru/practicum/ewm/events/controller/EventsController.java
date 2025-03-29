@@ -21,14 +21,15 @@ import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
-import ru.practicum.ewm.events.dto.EventsForUserRequestParams;
 import ru.practicum.ewm.events.dto.NewEventDto;
-import ru.practicum.ewm.events.dto.SearchEventsRequestParams;
-import ru.practicum.ewm.events.dto.SearchPublicEventsRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
-import ru.practicum.ewm.events.dto.UpdateEventRequestParams;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
-import ru.practicum.ewm.events.dto.UpdateRequestsStatusRequestParams;
+import ru.practicum.ewm.events.dto.parameters.EventsForUserRequestParams;
+import ru.practicum.ewm.events.dto.parameters.SearchEventsRequestParams;
+import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsRequestParams;
+import ru.practicum.ewm.events.dto.parameters.UpdateEventRequestParams;
+import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusRequestParams;
+import ru.practicum.ewm.events.model.SortingEvents;
 import ru.practicum.ewm.events.service.EventsService;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.util.Util;
@@ -39,6 +40,8 @@ import java.util.List;
 @RestController
 @Slf4j
 public class EventsController {
+    private static final String DATA_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     private static final String PRIVATE_API_PREFIX = "/users";
     private static final String ADMIN_API_PREFIX = "/admin/events";
     private static final String PUBLIC_API_PREFIX = "/events";
@@ -135,10 +138,10 @@ public class EventsController {
             @RequestParam(required = false) List<String> states,
             @RequestParam(required = false) List<Long> categories,
 
-            @DateTimeFormat(pattern = "${spring.jackson.date-format}")
+            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeStart,
 
-            @DateTimeFormat(pattern = "${spring.jackson.date-format}")
+            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeEnd,
 
             @RequestParam(required = false, defaultValue = "0") Integer from,
@@ -170,17 +173,17 @@ public class EventsController {
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> searchPublicEvents(
             @RequestParam(required = false) String text,
-            @RequestParam(required = false) List<Integer> categories,
+            @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) Boolean paid,
 
-            @DateTimeFormat(pattern = "${spring.jackson.date-format}")
+            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeStart,
 
-            @DateTimeFormat(pattern = "${spring.jackson.date-format}")
+            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeEnd,
 
             @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,
-            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) SortingEvents sort,
             @RequestParam(required = false, defaultValue = "0") Integer from,
             @RequestParam(required = false, defaultValue = "10") Integer size,
             HttpServletRequest request) {
