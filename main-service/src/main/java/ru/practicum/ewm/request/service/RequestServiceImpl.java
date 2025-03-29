@@ -41,7 +41,7 @@ public class RequestServiceImpl implements RequestService {
         User requester = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User not found with id %d", userId)));
 
-        RequestStatus status = event.getParticipantLimit() == 0
+        RequestStatus status = event.getParticipantLimit() == 0 || !event.getRequestModeration()
                 ? RequestStatus.CONFIRMED
                 : RequestStatus.PENDING;
 
