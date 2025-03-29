@@ -36,7 +36,7 @@ import ru.practicum.ewm.events.model.QEvent;
 import ru.practicum.ewm.events.model.SortingEvents;
 import ru.practicum.ewm.events.model.UserUpdateRequestAction;
 import ru.practicum.ewm.events.storage.EventsRepository;
-import ru.practicum.ewm.exception.ConflictException;
+import ru.practicum.ewm.error.exception.ConflictException;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.Request;

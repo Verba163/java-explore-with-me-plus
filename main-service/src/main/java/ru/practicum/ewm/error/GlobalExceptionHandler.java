@@ -103,10 +103,6 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
-
-
-
-
     @ExceptionHandler(AccessException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ApiError handleAccessException(final AccessException e) {
