@@ -12,14 +12,14 @@ import ru.practicum.ewm.user.service.UserService;
 
 import java.util.List;
 
+import static ru.practicum.ewm.user.constants.UserConstants.*;
+
 
 @Slf4j
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping(ADMIN_USER)
 @RequiredArgsConstructor
 public class UserController {
-    public static final String USER_ID_PATH = "/{user-id}";
-    public static final String USER_ID = "user-id";
 
     private final UserService userService;
 

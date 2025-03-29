@@ -9,14 +9,13 @@ import ru.practicum.ewm.request.service.RequestService;
 
 import java.util.List;
 
+import static ru.practicum.ewm.request.constants.RequestConstants.*;
+
 @Slf4j
 @RestController
-@RequestMapping("/users")
+@RequestMapping(USERS)
 @RequiredArgsConstructor
 public final class RequestController {
-    public static final String REQUEST_BASE_PATH = "{user-id}/requests";
-    public static final String USER_ID = "user-id";
-    public static final String REQUEST_BASE_PATCH_PATH = "{user-id}/requests/{requestId}/cancel";
 
     private final RequestService requestService;
 
@@ -36,7 +35,7 @@ public final class RequestController {
 
     @PatchMapping(REQUEST_BASE_PATCH_PATH)
     ParticipationRequestDto cancelUserRequest(@PathVariable(USER_ID) Long userId,
-                                              @PathVariable("requestId") Long requestId) {
+                                              @PathVariable(REQUEST_ID) Long requestId) {
         log.info("Cancelling request with ID: {} for user with ID: {}", requestId, userId);
         return requestService.cancelUserRequest(userId, requestId);
 
