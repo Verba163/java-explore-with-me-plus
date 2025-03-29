@@ -14,8 +14,8 @@ import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
+import ru.practicum.ewm.error.exception.ConflictException;
 import ru.practicum.ewm.error.exception.ValidationException;
-import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.error.exception.IllegalArgumentException;
 import ru.practicum.ewm.error.exception.NotFoundException;
 

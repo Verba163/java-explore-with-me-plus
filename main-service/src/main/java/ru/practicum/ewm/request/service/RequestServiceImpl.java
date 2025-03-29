@@ -9,6 +9,7 @@ import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.request.model.RequestStatus;
+import ru.practicum.ewm.request.params.RequestValidator;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
@@ -33,13 +34,19 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public ParticipationRequestDto createUserRequest(Long userId, Long eventId) {
+
         Event event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new NotFoundException(String.format("Event not found with id %d", eventId)));
+
         User requester = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new NotFoundException(String.format("User not found with id %d", userId)));
+
         RequestStatus status = event.getParticipantLimit() == 0
                 ? RequestStatus.CONFIRMED
                 : RequestStatus.PENDING;
+
+        RequestValidator validator = new RequestValidator(event, userId, eventId, requester, requestRepository);
+        validator.validate();
 
         Request newRequest = Request.builder()
                 .created(Util.getNowTruncatedToSeconds())
