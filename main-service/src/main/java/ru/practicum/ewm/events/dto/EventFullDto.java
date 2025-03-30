@@ -7,8 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.events.model.EventPublishState;
-import ru.practicum.ewm.events.model.Location;
+import ru.practicum.ewm.events.enums.EventPublishState;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
@@ -27,7 +26,7 @@ public class EventFullDto {
     private String description;
     private LocalDateTime eventDate;
     private UserShortDto initiator;
-    private Location location;
+    private LocationDto location;
     private Boolean paid;
     private Integer participantLimit;
     private LocalDateTime publishedOn;

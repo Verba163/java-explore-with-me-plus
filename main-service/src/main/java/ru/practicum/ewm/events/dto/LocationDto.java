@@ -1,4 +1,4 @@
-package ru.practicum.ewm.events.model;
+package ru.practicum.ewm.events.dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Location {
+public class LocationDto {
     private Float lat;
     private Float lon;
 }

@@ -1,4 +1,4 @@
-package ru.practicum.ewm.events.model;
+package ru.practicum.ewm.events.enums;
 
 public enum AdminEventAction {
     PUBLISH_EVENT,

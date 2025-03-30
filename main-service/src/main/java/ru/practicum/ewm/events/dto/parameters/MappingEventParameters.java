@@ -1,4 +1,4 @@
-package ru.practicum.ewm.events.mapper;
+package ru.practicum.ewm.events.dto.parameters;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import ru.practicum.ewm.user.dto.UserShortDto;
 @Getter
 @Setter
 @Builder
-public class EventDtoParams {
+public class MappingEventParameters {
     private Event event;
     private CategoryDto categoryDto;
     private UserShortDto initiator;

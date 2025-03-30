@@ -6,7 +6,7 @@ import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
 
 @Builder(toBuilder = true)
 @Getter
-public class UpdateEventRequestParams {
+public class UpdateEventParameters {
     private Long userId;
     private Long eventId;
     private UpdateEventUserRequest updateEventUserRequest;

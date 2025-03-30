@@ -2,18 +2,21 @@ package ru.practicum.ewm.events.dto.parameters;
 
 import lombok.Builder;
 import lombok.Getter;
+import ru.practicum.ewm.events.enums.SortingEvents;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder(toBuilder = true)
 @Getter
-public class SearchEventsRequestParams {
-    private List<Long> users;
-    private List<String> states;
+public class SearchPublicEventsParameters {
+    private String text;
     private List<Long> categories;
+    private Boolean paid;
     private LocalDateTime rangeStart;
     private LocalDateTime rangeEnd;
+    private Boolean onlyAvailable;
+    private SortingEvents sort;
     private Integer from;
     private Integer size;
 }

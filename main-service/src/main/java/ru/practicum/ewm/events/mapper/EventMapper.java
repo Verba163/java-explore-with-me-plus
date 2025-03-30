@@ -4,12 +4,13 @@ import org.springframework.stereotype.Component;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventShortDto;
+import ru.practicum.ewm.events.dto.LocationDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventCommonRequest;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.events.dto.parameters.MappingEventParameters;
 import ru.practicum.ewm.events.model.Event;
-import ru.practicum.ewm.events.model.Location;
 
 @Component
 public class EventMapper {
@@ -28,7 +29,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventFullDto toEventFullDto(EventDtoParams eventFullDtoParams) {
+    public static EventFullDto toEventFullDto(MappingEventParameters eventFullDtoParams) {
         Event event = eventFullDtoParams.getEvent();
 
         return EventFullDto.builder()
@@ -40,7 +41,7 @@ public class EventMapper {
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
                 .initiator(eventFullDtoParams.getInitiator())
-                .location(new Location(event.getLocationLat(), event.getLocationLon()))
+                .location(new LocationDto(event.getLocationLat(), event.getLocationLon()))
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
                 .publishedOn(event.getPublishedOn())
@@ -51,7 +52,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(EventDtoParams eventDtoParams) {
+    public static EventShortDto toEventShortDto(MappingEventParameters eventDtoParams) {
         Event event = eventDtoParams.getEvent();
 
         return EventShortDto.builder()

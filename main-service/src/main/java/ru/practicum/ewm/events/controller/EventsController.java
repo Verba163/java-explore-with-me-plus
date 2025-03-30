@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.ewm.client.StatClient;
+import ru.practicum.ewm.events.constants.EventsConstants;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
@@ -24,12 +25,12 @@ import ru.practicum.ewm.events.dto.EventShortDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
-import ru.practicum.ewm.events.dto.parameters.EventsForUserRequestParams;
-import ru.practicum.ewm.events.dto.parameters.SearchEventsRequestParams;
-import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsRequestParams;
-import ru.practicum.ewm.events.dto.parameters.UpdateEventRequestParams;
-import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusRequestParams;
-import ru.practicum.ewm.events.model.SortingEvents;
+import ru.practicum.ewm.events.dto.parameters.EventsForUserParameters;
+import ru.practicum.ewm.events.dto.parameters.SearchEventsParameters;
+import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsParameters;
+import ru.practicum.ewm.events.dto.parameters.UpdateEventParameters;
+import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusParameters;
+import ru.practicum.ewm.events.enums.SortingEvents;
 import ru.practicum.ewm.events.service.EventsService;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.util.Util;
@@ -40,12 +41,6 @@ import java.util.List;
 @RestController
 @Slf4j
 public class EventsController {
-    private static final String DATA_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
-    private static final String PRIVATE_API_PREFIX = "/users";
-    private static final String ADMIN_API_PREFIX = "/admin/events";
-    private static final String PUBLIC_API_PREFIX = "/events";
-
     private final EventsService eventsService;
     private final StatClient statClient;
     private final String applicationName;
@@ -61,13 +56,13 @@ public class EventsController {
     }
 
     // region PRIVATE
-    @GetMapping(PRIVATE_API_PREFIX + "/{userId}/events")
+    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events")
     @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> getEventsCreatedByUser(@PathVariable Long userId,
                                        @RequestParam(defaultValue = "0") Integer from,
                                        @RequestParam(defaultValue = "10") Integer size) {
         log.info("Request: get events for user id={}, from={}, size={}", userId, from, size);
-        EventsForUserRequestParams eventsForUserRequestParams = EventsForUserRequestParams.builder()
+        EventsForUserParameters eventsForUserRequestParams = EventsForUserParameters.builder()
                 .userId(userId)
                 .from(from)
                 .size(size)
@@ -75,7 +70,7 @@ public class EventsController {
         return eventsService.getEventsCreatedByUser(eventsForUserRequestParams);
     }
 
-    @PostMapping(PRIVATE_API_PREFIX + "/{userId}/events")
+    @PostMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createEvent(@PathVariable Long userId,
                                     @Valid @RequestBody NewEventDto newEventDto) {
@@ -83,7 +78,7 @@ public class EventsController {
         return eventsService.createEvent(userId, newEventDto);
     }
 
-    @GetMapping(PRIVATE_API_PREFIX + "/{userId}/events/{eventId}")
+    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}")
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto getEventById(@PathVariable Long userId,
                                      @PathVariable Long eventId) {
@@ -91,22 +86,22 @@ public class EventsController {
         return eventsService.getEventById(userId, eventId);
     }
 
-    @PatchMapping(PRIVATE_API_PREFIX + "/{userId}/events/{eventId}")
+    @PatchMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}")
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEvent(@PathVariable Long userId,
                                     @PathVariable Long eventId,
                                     @Valid @RequestBody UpdateEventUserRequest updateEventUserRequest) {
         log.info("Request: update event id={} by user id={}, data={}", eventId, userId, updateEventUserRequest);
-        UpdateEventRequestParams updateEventRequestParams = UpdateEventRequestParams.builder()
+        UpdateEventParameters updateEventParameters = UpdateEventParameters.builder()
                 .userId(userId)
                 .eventId(eventId)
                 .updateEventUserRequest(updateEventUserRequest)
                 .build();
 
-        return eventsService.updateEvent(updateEventRequestParams);
+        return eventsService.updateEvent(updateEventParameters);
     }
 
-    @GetMapping(PRIVATE_API_PREFIX + "/{userId}/events/{eventId}/requests")
+    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.OK)
     public List<ParticipationRequestDto> getRequestsForEvent(@PathVariable Long userId,
                                                              @PathVariable Long eventId) {
@@ -114,39 +109,39 @@ public class EventsController {
         return eventsService.getRequestsForEvent(userId, eventId);
     }
 
-    @PatchMapping(PRIVATE_API_PREFIX + "/{userId}/events/{eventId}/requests")
+    @PatchMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.OK)
     public EventRequestStatusUpdateResult updateRequestsForEvent(@PathVariable Long userId,
                                                          @PathVariable Long eventId,
                                                          @RequestBody EventRequestStatusUpdateRequest updateRequest) {
         log.info("Request: update requests for event id={} for user id={}, data={}", eventId, userId, updateRequest);
-        UpdateRequestsStatusRequestParams updateRequestsStatusRequestParams
-                = UpdateRequestsStatusRequestParams.builder()
+        UpdateRequestsStatusParameters updateRequestsStatusParameters
+                = UpdateRequestsStatusParameters.builder()
                 .userId(userId)
                 .eventId(eventId)
                 .eventRequestStatusUpdateRequest(updateRequest)
                 .build();
-        return eventsService.updateRequestsForEvent(updateRequestsStatusRequestParams);
+        return eventsService.updateRequestsForEvent(updateRequestsStatusParameters);
     }
     // endregion
 
     // region ADMIN
-    @GetMapping(ADMIN_API_PREFIX)
+    @GetMapping(EventsConstants.ADMIN_API_PREFIX)
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> searchEvents(
             @RequestParam(required = false) List<Long> users,
             @RequestParam(required = false) List<String> states,
             @RequestParam(required = false) List<Long> categories,
 
-            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
+            @DateTimeFormat(pattern = EventsConstants.DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeStart,
 
-            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
+            @DateTimeFormat(pattern = EventsConstants.DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeEnd,
 
             @RequestParam(required = false, defaultValue = "0") Integer from,
             @RequestParam(required = false, defaultValue = "10") Integer size) {
-        SearchEventsRequestParams searchEventsRequestParams = SearchEventsRequestParams.builder()
+        SearchEventsParameters searchEventsParameters = SearchEventsParameters.builder()
                 .users(users)
                 .states(states)
                 .categories(categories)
@@ -155,11 +150,11 @@ public class EventsController {
                 .from(from)
                 .size(size)
                 .build();
-        log.info("Request: search events. Query={}", searchEventsRequestParams);
-        return eventsService.searchEvents(searchEventsRequestParams);
+        log.info("Request: search events. Query={}", searchEventsParameters);
+        return eventsService.searchEvents(searchEventsParameters);
     }
 
-    @PatchMapping(ADMIN_API_PREFIX + "/{eventId}")
+    @PatchMapping(EventsConstants.ADMIN_API_PREFIX + "/{eventId}")
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEventByAdmin(@PathVariable Long eventId,
                                            @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
@@ -169,17 +164,17 @@ public class EventsController {
     // endregion
 
     // region PUBLIC
-    @GetMapping(PUBLIC_API_PREFIX)
+    @GetMapping(EventsConstants.PUBLIC_API_PREFIX)
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> searchPublicEvents(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) Boolean paid,
 
-            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
+            @DateTimeFormat(pattern = EventsConstants.DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeStart,
 
-            @DateTimeFormat(pattern = DATA_TIME_FORMAT)
+            @DateTimeFormat(pattern = EventsConstants.DATA_TIME_FORMAT)
             @RequestParam(required = false) LocalDateTime rangeEnd,
 
             @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,
@@ -187,7 +182,7 @@ public class EventsController {
             @RequestParam(required = false, defaultValue = "0") Integer from,
             @RequestParam(required = false, defaultValue = "10") Integer size,
             HttpServletRequest request) {
-        SearchPublicEventsRequestParams searchPublicEventsRequestParams = SearchPublicEventsRequestParams.builder()
+        SearchPublicEventsParameters searchPublicEventsParameters = SearchPublicEventsParameters.builder()
                 .text(text)
                 .categories(categories)
                 .paid(paid)
@@ -198,13 +193,13 @@ public class EventsController {
                 .sort(sort)
                 .size(size)
                 .build();
-        log.info("Request: search public events. Query={}", searchPublicEventsRequestParams);
-        List<EventFullDto> result = eventsService.searchPublicEvents(searchPublicEventsRequestParams);
+        log.info("Request: search public events. Query={}", searchPublicEventsParameters);
+        List<EventFullDto> result = eventsService.searchPublicEvents(searchPublicEventsParameters);
         hitStat(request);
         return result;
     }
 
-    @GetMapping(PUBLIC_API_PREFIX + "/{eventId}")
+    @GetMapping(EventsConstants.PUBLIC_API_PREFIX + "/{eventId}")
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto getPublicEventById(@PathVariable Long eventId, HttpServletRequest request) {
         log.info("Request: get public event with id={}", eventId);
@@ -224,7 +219,7 @@ public class EventsController {
         try {
             statClient.hit(statHitDto);
         } catch (Exception e) {
-            log.error("Fail to hit stat. Error: {}. \nStack trace:\n{}", e.getMessage(), e.getStackTrace());
+            log.error("Error on hitting stats. Msg: {}, \nstackTrace: {}", e.getMessage(), e.getStackTrace());
         }
     }
 }

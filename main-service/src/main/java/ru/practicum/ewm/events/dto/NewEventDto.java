@@ -10,7 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.ewm.events.model.Location;
 
 import java.time.LocalDateTime;
 
@@ -36,7 +35,7 @@ public class NewEventDto {
     Integer category;
 
     @NotNull
-    Location location;
+    LocationDto location;
 
     @Builder.Default
     Boolean requestModeration = true;
