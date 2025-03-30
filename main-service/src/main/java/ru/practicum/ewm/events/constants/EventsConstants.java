@@ -10,5 +10,5 @@ public class EventsConstants {
     public static final String USER_ID = "user-id";
     public static final String EVENT_ID = "event-id";
     public static final String EVENT_ID_PATH = "/{event-id}";
-    public static final String PRIVATE_API_USER_EVENT_REQUESTS= "/{user-id}/events/{event-id}/requests";
+    public static final String PRIVATE_API_USER_EVENT_REQUESTS = "/{user-id}/events/{event-id}/requests";
 }

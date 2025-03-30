@@ -17,7 +17,7 @@ import java.util.List;
 public class CategoryController {
     private static final String ADMIN_API_PREFIX = "/admin/categories";
     private static final String PUBLIC_API_PREFIX = "/categories";
-    private static final String CAT_ID_PATH = "/{cat-id}" ;
+    private static final String CAT_ID_PATH = "/{cat-id}";
     private static final String CAT_ID = "cat-id";
 
     private final CategoryService categoryService;
