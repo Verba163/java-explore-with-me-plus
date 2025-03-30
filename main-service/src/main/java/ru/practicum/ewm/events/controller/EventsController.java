@@ -7,29 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.ewm.client.StatClient;
 import ru.practicum.ewm.events.constants.EventsConstants;
-import ru.practicum.ewm.events.dto.EventFullDto;
-import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
-import ru.practicum.ewm.events.dto.EventShortDto;
-import ru.practicum.ewm.events.dto.NewEventDto;
-import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
-import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
-import ru.practicum.ewm.events.dto.parameters.EventsForUserParameters;
-import ru.practicum.ewm.events.dto.parameters.SearchEventsParameters;
-import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsParameters;
-import ru.practicum.ewm.events.dto.parameters.UpdateEventParameters;
-import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusParameters;
+import ru.practicum.ewm.events.dto.*;
+import ru.practicum.ewm.events.dto.parameters.*;
 import ru.practicum.ewm.events.enums.SortingEvents;
 import ru.practicum.ewm.events.service.EventsService;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
@@ -37,6 +20,8 @@ import ru.practicum.ewm.util.Util;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static ru.practicum.ewm.events.constants.EventsConstants.*;
 
 @RestController
 @Slf4j
@@ -56,11 +41,11 @@ public class EventsController {
     }
 
     // region PRIVATE
-    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events")
+    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + PUBLIC_API_PREFIX_USER_ID)
     @ResponseStatus(HttpStatus.OK)
-    public List<EventShortDto> getEventsCreatedByUser(@PathVariable Long userId,
-                                       @RequestParam(defaultValue = "0") Integer from,
-                                       @RequestParam(defaultValue = "10") Integer size) {
+    public List<EventShortDto> getEventsCreatedByUser(@PathVariable(USER_ID) Long userId,
+                                                      @RequestParam(defaultValue = "0") Integer from,
+                                                      @RequestParam(defaultValue = "10") Integer size) {
         log.info("Request: get events for user id={}, from={}, size={}", userId, from, size);
         EventsForUserParameters eventsForUserRequestParams = EventsForUserParameters.builder()
                 .userId(userId)
@@ -70,26 +55,26 @@ public class EventsController {
         return eventsService.getEventsCreatedByUser(eventsForUserRequestParams);
     }
 
-    @PostMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events")
+    @PostMapping(EventsConstants.PRIVATE_API_PREFIX + PUBLIC_API_PREFIX_USER_ID)
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto createEvent(@PathVariable Long userId,
+    public EventFullDto createEvent(@PathVariable(USER_ID) Long userId,
                                     @Valid @RequestBody NewEventDto newEventDto) {
         log.info("Request: create new event from user id={}, newEventDto={}", userId, newEventDto);
         return eventsService.createEvent(userId, newEventDto);
     }
 
-    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}")
+    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + PRIVATE_API_PREFIX_USER_ID_EVENT_ID)
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto getEventById(@PathVariable Long userId,
-                                     @PathVariable Long eventId) {
+    public EventFullDto getEventById(@PathVariable(USER_ID) Long userId,
+                                     @PathVariable(EVENT_ID) Long eventId) {
         log.info("Request: get event id={} for user id={}", eventId, userId);
         return eventsService.getEventById(userId, eventId);
     }
 
-    @PatchMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}")
+    @PatchMapping(EventsConstants.PRIVATE_API_PREFIX + PRIVATE_API_PREFIX_USER_ID_EVENT_ID)
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto updateEvent(@PathVariable Long userId,
-                                    @PathVariable Long eventId,
+    public EventFullDto updateEvent(@PathVariable(USER_ID) Long userId,
+                                    @PathVariable(EVENT_ID) Long eventId,
                                     @Valid @RequestBody UpdateEventUserRequest updateEventUserRequest) {
         log.info("Request: update event id={} by user id={}, data={}", eventId, userId, updateEventUserRequest);
         UpdateEventParameters updateEventParameters = UpdateEventParameters.builder()
@@ -101,19 +86,19 @@ public class EventsController {
         return eventsService.updateEvent(updateEventParameters);
     }
 
-    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}/requests")
+    @GetMapping(EventsConstants.PRIVATE_API_PREFIX + PRIVATE_API_USER_EVENT_REQUESTS)
     @ResponseStatus(HttpStatus.OK)
-    public List<ParticipationRequestDto> getRequestsForEvent(@PathVariable Long userId,
-                                                             @PathVariable Long eventId) {
+    public List<ParticipationRequestDto> getRequestsForEvent(@PathVariable(USER_ID) Long userId,
+                                                             @PathVariable(EVENT_ID) Long eventId) {
         log.info("Request: get requests for event id={} for user id={}", eventId, userId);
         return eventsService.getRequestsForEvent(userId, eventId);
     }
 
-    @PatchMapping(EventsConstants.PRIVATE_API_PREFIX + "/{userId}/events/{eventId}/requests")
+    @PatchMapping(EventsConstants.PRIVATE_API_PREFIX + PRIVATE_API_USER_EVENT_REQUESTS)
     @ResponseStatus(HttpStatus.OK)
-    public EventRequestStatusUpdateResult updateRequestsForEvent(@PathVariable Long userId,
-                                                         @PathVariable Long eventId,
-                                                         @RequestBody EventRequestStatusUpdateRequest updateRequest) {
+    public EventRequestStatusUpdateResult updateRequestsForEvent(@PathVariable(USER_ID) Long userId,
+                                                                 @PathVariable(EVENT_ID) Long eventId,
+                                                                 @RequestBody EventRequestStatusUpdateRequest updateRequest) {
         log.info("Request: update requests for event id={} for user id={}, data={}", eventId, userId, updateRequest);
         UpdateRequestsStatusParameters updateRequestsStatusParameters
                 = UpdateRequestsStatusParameters.builder()
@@ -154,9 +139,9 @@ public class EventsController {
         return eventsService.searchEvents(searchEventsParameters);
     }
 
-    @PatchMapping(EventsConstants.ADMIN_API_PREFIX + "/{eventId}")
+    @PatchMapping(EventsConstants.ADMIN_API_PREFIX + EVENT_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto updateEventByAdmin(@PathVariable Long eventId,
+    public EventFullDto updateEventByAdmin(@PathVariable(EVENT_ID) Long eventId,
                                            @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         log.info("Request: update event id={} by admin, data={}", eventId, updateEventAdminRequest);
         return eventsService.updateEventByAdmin(eventId, updateEventAdminRequest);
@@ -199,9 +184,9 @@ public class EventsController {
         return result;
     }
 
-    @GetMapping(EventsConstants.PUBLIC_API_PREFIX + "/{eventId}")
+    @GetMapping(EventsConstants.PUBLIC_API_PREFIX + EVENT_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto getPublicEventById(@PathVariable Long eventId, HttpServletRequest request) {
+    public EventFullDto getPublicEventById(@PathVariable(EVENT_ID) Long eventId, HttpServletRequest request) {
         log.info("Request: get public event with id={}", eventId);
         EventFullDto result = eventsService.getPublicEventById(eventId);
         hitStat(request);

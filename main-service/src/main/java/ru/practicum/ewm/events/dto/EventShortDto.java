@@ -17,13 +17,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventShortDto {
-    private Long id;
-    private String annotation;
-    private String title;
-    private Long views;
-    private CategoryDto category;
-    private Long confirmedRequests;
-    private UserShortDto initiator;
-    private LocalDateTime eventDate;
-    private Boolean paid;
+    Long id;
+    String annotation;
+    String title;
+    Long views;
+    CategoryDto category;
+    Long confirmedRequests;
+    UserShortDto initiator;
+    LocalDateTime eventDate;
+    Boolean paid;
 }

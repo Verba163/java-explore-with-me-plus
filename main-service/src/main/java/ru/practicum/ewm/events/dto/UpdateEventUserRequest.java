@@ -18,19 +18,19 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateEventUserRequest {
     @Size(min = 3, max = 120)
-    private String title;
+    String title;
 
     @Size(min = 20, max = 7000)
-    private String description;
+    String description;
 
     @Size(min = 20, max = 2000)
-    private String annotation;
+    String annotation;
 
-    private Long category;
-    private LocationDto location;
-    private Boolean requestModeration;
-    private Boolean paid;
-    private Integer participantLimit;
-    private LocalDateTime eventDate;
-    private UserEventAction stateAction;
+    Long category;
+    LocationDto location;
+    Boolean requestModeration;
+    Boolean paid;
+    Integer participantLimit;
+    LocalDateTime eventDate;
+    UserEventAction stateAction;
 }

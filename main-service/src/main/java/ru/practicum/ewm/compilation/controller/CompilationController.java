@@ -18,6 +18,8 @@ import java.util.List;
 public class CompilationController {
     private static final String ADMIN_API_PREFIX = "/admin/compilations";
     private static final String PUBLIC_API_PREFIX = "/compilations";
+    private static final String COMP_ID_PATH = "/{comp-id}";
+    private static final String COMP_ID = "comp-id";
 
     private final CompilationService compilationService;
 
@@ -36,9 +38,9 @@ public class CompilationController {
         return compilationService.getCompilations(compilationParams);
     }
 
-    @GetMapping(PUBLIC_API_PREFIX + "/{compId}")
+    @GetMapping(PUBLIC_API_PREFIX + COMP_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
-    public CompilationDto getCompilationById(@PathVariable Long compId) {
+    public CompilationDto getCompilationById(@PathVariable(COMP_ID) Long compId) {
         log.info("Request: get compilation with id={}", compId);
         return compilationService.getCompilationById(compId);
     }
@@ -50,17 +52,17 @@ public class CompilationController {
         return compilationService.createdCompilation(newCompilationDto);
     }
 
-    @DeleteMapping(ADMIN_API_PREFIX + "/{compId}")
+    @DeleteMapping(ADMIN_API_PREFIX + COMP_ID_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCompilation(@PathVariable Long compId) {
+    public void deleteCompilation(@PathVariable(COMP_ID) Long compId) {
         log.info("Request: delete compilation with id={}", compId);
         compilationService.deleteCompilation(compId);
     }
 
-    @PatchMapping(ADMIN_API_PREFIX + "/{compId}")
+    @PatchMapping(ADMIN_API_PREFIX + COMP_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto updateCompilation(@RequestBody @Valid NewCompilationDto newCompilationDto,
-                                            @PathVariable Long compId) {
+                                            @PathVariable(COMP_ID) Long compId) {
         log.info("Request: update compilation with id={}, update compilation={}", compId, newCompilationDto);
 
         CompilationParams compilationParams = CompilationParams

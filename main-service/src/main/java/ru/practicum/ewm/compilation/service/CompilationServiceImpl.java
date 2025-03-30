@@ -100,7 +100,7 @@ public class CompilationServiceImpl implements CompilationService {
     public void deleteCompilation(Long compId) {
 
         if (!compilationRepository.existsById(compId)) {
-            throw new NotFoundException("Compilation with id " + compId + " not found");
+            throw new NotFoundException(String.format("Compilation with id %d not found", compId));
         }
 
         compilationRepository.deleteById(compId);
@@ -173,6 +173,6 @@ public class CompilationServiceImpl implements CompilationService {
     private Compilation checkAndGetCompilation(Long compId) {
         return compilationRepository
                 .findById(compId)
-                .orElseThrow(() -> new NotFoundException("Compilation with id " + compId + " not found"));
+                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id %d not found", compId)));
     }
 }

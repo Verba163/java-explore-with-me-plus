@@ -16,14 +16,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateEventAdminRequest {
-    private String title;
-    private String description;
-    private String annotation;
-    private Long category;
-    private LocationDto location;
-    private Boolean requestModeration;
-    private Boolean paid;
-    private Integer participantLimit;
-    private LocalDateTime eventDate;
-    private AdminEventAction stateAction;
+    String title;
+    String description;
+    String annotation;
+    Long category;
+    LocationDto location;
+    Boolean requestModeration;
+    Boolean paid;
+    Integer participantLimit;
+    LocalDateTime eventDate;
+    AdminEventAction stateAction;
 }

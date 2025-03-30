@@ -1,17 +1,20 @@
 package ru.practicum.ewm.category.dto;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryParams {
 
-    private NewCategoryDto newCategoryDto;
+    NewCategoryDto newCategoryDto;
 
-    private Long catId;
+    Long catId;
 
-    private Long from;
+    Long from;
 
-    private Long size;
+    Long size;
 }

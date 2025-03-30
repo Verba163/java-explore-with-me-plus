@@ -17,6 +17,8 @@ import java.util.List;
 public class CategoryController {
     private static final String ADMIN_API_PREFIX = "/admin/categories";
     private static final String PUBLIC_API_PREFIX = "/categories";
+    private static final String CAT_ID_PATH = "/{cat-id}" ;
+    private static final String CAT_ID = "cat-id";
 
     private final CategoryService categoryService;
 
@@ -34,9 +36,9 @@ public class CategoryController {
         return categoryService.getCategory(categoryParams);
     }
 
-    @GetMapping(PUBLIC_API_PREFIX + "/{catId}")
+    @GetMapping(PUBLIC_API_PREFIX + CAT_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto getCategoryById(@PathVariable Long catId) {
+    public CategoryDto getCategoryById(@PathVariable(CAT_ID) Long catId) {
         log.info("Received GET request for category with id: {}", catId);
         return categoryService.getCategoryById(catId);
     }
@@ -48,16 +50,16 @@ public class CategoryController {
         return categoryService.createCategory(newCategoryDto);
     }
 
-    @DeleteMapping(ADMIN_API_PREFIX + "/{catId}")
+    @DeleteMapping(ADMIN_API_PREFIX + CAT_ID_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable Long catId) {
+    public void deleteCategory(@PathVariable(CAT_ID) Long catId) {
         log.info("Received DELETE request to delete category with id: {}", catId);
         categoryService.deleteCategory(catId);
     }
 
-    @PatchMapping(ADMIN_API_PREFIX + "/{catId}")
+    @PatchMapping(ADMIN_API_PREFIX + CAT_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto updateCategory(@PathVariable Long catId, @RequestBody NewCategoryDto newCategoryDto) {
+    public CategoryDto updateCategory(@PathVariable(CAT_ID) Long catId, @RequestBody NewCategoryDto newCategoryDto) {
         log.info("Received PATCH request to update category with id : {}, update : {}", catId, newCategoryDto);
 
         CategoryParams categoryParams = CategoryParams.builder()

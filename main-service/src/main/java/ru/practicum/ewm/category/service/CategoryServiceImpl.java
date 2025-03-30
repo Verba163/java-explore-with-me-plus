@@ -15,9 +15,9 @@ import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
 import ru.practicum.ewm.error.exception.ConflictException;
-import ru.practicum.ewm.error.exception.ValidationException;
 import ru.practicum.ewm.error.exception.IllegalArgumentException;
 import ru.practicum.ewm.error.exception.NotFoundException;
+import ru.practicum.ewm.error.exception.ValidationException;
 import ru.practicum.ewm.events.storage.EventsRepository;
 
 import java.util.Collections;
@@ -83,7 +83,7 @@ public class CategoryServiceImpl implements CategoryService {
             return CategoryMapper.toCategoryDto(savedCategory);
         } catch (DataIntegrityViolationException e) {
             log.error("Conflict when create category with name: {}", newCategoryDto.getName());
-            throw new ConflictException("Category with name '" + newCategoryDto.getName() + "' already exists");
+            throw new ConflictException(String.format("Category with name '%s' already exists", newCategoryDto.getName()));
         }
     }
 
@@ -93,7 +93,7 @@ public class CategoryServiceImpl implements CategoryService {
         checkAndGetCategory(catId);
 
         if (eventsRepository.countByCategoryId(catId) > 0) {
-            throw new ConflictException("Category with id '" + catId + "' is not empty");
+            throw new ConflictException(String.format("Category with id '%d' is not empty", catId));
         }
         log.info("Deleting category id: {}", catId);
         categoryRepository.deleteById(catId);
@@ -124,14 +124,14 @@ public class CategoryServiceImpl implements CategoryService {
         } catch (DataIntegrityViolationException e) {
             log.error("Conflict when trying update category id={} with new name: {}",
                     categoryId, newCategoryDto.getName());
-            throw new ConflictException("Cannot update category id " +
-                    categoryId + ": name '" + newCategoryDto.getName() + "' already exists");
+            throw new ConflictException(String.format("Cannot update category id %d : name '%s' already exists",
+                    categoryId, newCategoryDto.getName()));
         }
     }
 
     private Category checkAndGetCategory(Long catId) {
         return categoryRepository
                 .findById(catId)
-                .orElseThrow(() -> new NotFoundException("Category with id '" + catId + "' not found"));
+                .orElseThrow(() -> new NotFoundException(String.format("Category with id '%d' not found", catId)));
     }
 }

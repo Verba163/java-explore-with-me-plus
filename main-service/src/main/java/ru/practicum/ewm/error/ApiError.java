@@ -17,12 +17,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApiError {
-    private String message;
-    private String reason;
-    private String status;
-    private List<String> errors;
-    private String stackTrace;
+    String message;
+    String reason;
+    String status;
+    List<String> errors;
+    String stackTrace;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;
+    LocalDateTime timestamp;
 }

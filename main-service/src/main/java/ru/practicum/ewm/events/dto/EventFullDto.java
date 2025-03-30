@@ -18,20 +18,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventFullDto {
-    private Long id;
-    private String annotation;
-    private CategoryDto category;
-    private Long confirmedRequests;
-    private LocalDateTime createdOn;
-    private String description;
-    private LocalDateTime eventDate;
-    private UserShortDto initiator;
-    private LocationDto location;
-    private Boolean paid;
-    private Integer participantLimit;
-    private LocalDateTime publishedOn;
-    private Boolean requestModeration;
-    private String title;
-    private EventPublishState state;
-    private Long views;
+    Long id;
+    String annotation;
+    CategoryDto category;
+    Long confirmedRequests;
+    LocalDateTime createdOn;
+    String description;
+    LocalDateTime eventDate;
+    UserShortDto initiator;
+    LocationDto location;
+    Boolean paid;
+    Integer participantLimit;
+    LocalDateTime publishedOn;
+    Boolean requestModeration;
+    String title;
+    EventPublishState state;
+    Long views;
 }
