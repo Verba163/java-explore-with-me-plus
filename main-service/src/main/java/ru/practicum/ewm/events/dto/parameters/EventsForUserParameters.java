@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Builder(toBuilder = true)
 @Getter
-public class EventsForUserRequestParams {
+public class EventsForUserParameters {
     private Long userId;
     private Integer from;
     private Integer size;

@@ -2,6 +2,9 @@ package ru.practicum.ewm.compilation.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
@@ -14,15 +17,12 @@ import ru.practicum.ewm.compilation.storage.CompilationRepository;
 import ru.practicum.ewm.error.exception.NotFoundException;
 import ru.practicum.ewm.error.exception.ValidationException;
 import ru.practicum.ewm.events.dto.EventShortDto;
-import ru.practicum.ewm.events.mapper.EventDtoParams;
+import ru.practicum.ewm.events.dto.parameters.MappingEventParameters;
 import ru.practicum.ewm.events.mapper.EventMapper;
 import ru.practicum.ewm.events.model.Event;
-import ru.practicum.ewm.events.service.EventsViewsService;
 import ru.practicum.ewm.events.storage.EventsRepository;
+import ru.practicum.ewm.events.views.EventsViewsGetter;
 import ru.practicum.ewm.user.mapper.UserMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final EventsRepository eventsRepository;
-    private final EventsViewsService eventsViewsService;
+    private final EventsViewsGetter eventsViewsGetter;
 
     @Override
     public List<CompilationDto> getCompilations(CompilationParams compilationParams) {
@@ -153,19 +153,19 @@ public class CompilationServiceImpl implements CompilationService {
         List<Long> eventIds = events.stream()
                 .map(Event::getId)
                 .toList();
-        Map<Long, Long> eventsViewsMap = eventsViewsService.getEventsViewsMap(eventIds);
+        Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(eventIds);
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(eventIds);
 
         return events.stream()
                 .map(event -> {
-                    EventDtoParams eventDtoParams = EventDtoParams.builder()
+                    MappingEventParameters mappingEventParameters = MappingEventParameters.builder()
                             .event(event)
                             .categoryDto(CategoryMapper.toCategoryDto(event.getCategory()))
                             .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                             .confirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L))
                             .views(eventsViewsMap.getOrDefault(event.getId(), 0L))
                             .build();
-                    return EventMapper.toEventShortDto(eventDtoParams);
+                    return EventMapper.toEventShortDto(mappingEventParameters);
                 })
                 .collect(Collectors.toList());
     }

@@ -6,8 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.ewm.events.model.AdminEventAction;
-import ru.practicum.ewm.events.model.Location;
+import ru.practicum.ewm.events.enums.AdminEventAction;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +20,7 @@ public class UpdateEventAdminRequest {
     private String description;
     private String annotation;
     private Long category;
-    private Location location;
+    private LocationDto location;
     private Boolean requestModeration;
     private Boolean paid;
     private Integer participantLimit;

@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.ewm.events.model.UserUpdateRequestAction;
+import ru.practicum.ewm.events.enums.UserUpdateRequestAction;
 
 import java.util.List;
 

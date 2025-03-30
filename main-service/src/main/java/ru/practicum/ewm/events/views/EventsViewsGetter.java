@@ -1,10 +1,11 @@
-package ru.practicum.ewm.events.service;
+package ru.practicum.ewm.events.views;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.practicum.dto.StatViewDto;
 import ru.practicum.ewm.client.StatClient;
+import ru.practicum.ewm.events.constants.EventsConstants;
 import ru.practicum.ewm.util.Util;
 
 import java.time.LocalDateTime;
@@ -13,10 +14,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
-public class EventsViewsService {
+@Component
+@RequiredArgsConstructor
+public class EventsViewsGetter {
     private final StatClient statClient;
 
     public Map<Long, Long> getEventsViewsMap(List<Long> eventIds) {
@@ -32,11 +33,7 @@ public class EventsViewsService {
         try {
             stat = statClient.getStat(start, end, uris, true);
         } catch (Exception e) {
-            log.error(
-                    "Ошибка при попытке получить статистику. Msg: {}, \nstackTrace: {}",
-                    e.getMessage(),
-                    e.getStackTrace()
-            );
+            log.error("Error on getting stats for event. Msg: {}, \nstackTrace: {}", e.getMessage(), e.getStackTrace());
         }
 
         // URI -> hits
@@ -46,12 +43,12 @@ public class EventsViewsService {
         // id -> hits
         return eventIds.stream()
                 .collect(Collectors.toMap(
-                        Function.identity(),
-                        id -> uriHitsMap.getOrDefault(eventUriMap.get(id), 0L)
+                        Function.identity(), id -> uriHitsMap.getOrDefault(eventUriMap.get(id), 0L)
                 ));
     }
 
     private String createURIForEventId(long id) {
-        return String.format("/events/%d", id);
+        return String.join("", EventsConstants.PUBLIC_API_PREFIX, "/", String.valueOf(id));
     }
 }
+

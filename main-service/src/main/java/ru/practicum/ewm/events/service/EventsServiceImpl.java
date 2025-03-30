@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
+import ru.practicum.ewm.error.exception.ConflictException;
 import ru.practicum.ewm.error.exception.DataIntegrityViolationException;
 import ru.practicum.ewm.error.exception.NotFoundException;
 import ru.practicum.ewm.error.exception.ValidationException;
@@ -17,26 +18,26 @@ import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
+import ru.practicum.ewm.events.dto.LocationDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventCommonRequest;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
-import ru.practicum.ewm.events.dto.parameters.EventsForUserRequestParams;
-import ru.practicum.ewm.events.dto.parameters.SearchEventsRequestParams;
-import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsRequestParams;
-import ru.practicum.ewm.events.dto.parameters.UpdateEventRequestParams;
-import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusRequestParams;
-import ru.practicum.ewm.events.mapper.EventDtoParams;
+import ru.practicum.ewm.events.dto.parameters.EventsForUserParameters;
+import ru.practicum.ewm.events.dto.parameters.MappingEventParameters;
+import ru.practicum.ewm.events.dto.parameters.SearchEventsParameters;
+import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsParameters;
+import ru.practicum.ewm.events.dto.parameters.UpdateEventParameters;
+import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusParameters;
+import ru.practicum.ewm.events.enums.AdminEventAction;
+import ru.practicum.ewm.events.enums.EventPublishState;
+import ru.practicum.ewm.events.enums.SortingEvents;
+import ru.practicum.ewm.events.enums.UserUpdateRequestAction;
 import ru.practicum.ewm.events.mapper.EventMapper;
-import ru.practicum.ewm.events.model.AdminEventAction;
 import ru.practicum.ewm.events.model.Event;
-import ru.practicum.ewm.events.model.EventPublishState;
-import ru.practicum.ewm.events.model.Location;
 import ru.practicum.ewm.events.model.QEvent;
-import ru.practicum.ewm.events.model.SortingEvents;
-import ru.practicum.ewm.events.model.UserUpdateRequestAction;
 import ru.practicum.ewm.events.storage.EventsRepository;
-import ru.practicum.ewm.error.exception.ConflictException;
+import ru.practicum.ewm.events.views.EventsViewsGetter;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.Request;
@@ -64,14 +65,14 @@ public class EventsServiceImpl implements EventsService {
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
 
-    private final EventsViewsService eventsViewsService;
+    private final EventsViewsGetter eventsViewsGetter;
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventShortDto> getEventsCreatedByUser(EventsForUserRequestParams eventsForUserRequestParams) {
-        Long userId = eventsForUserRequestParams.getUserId();
-        Integer from = eventsForUserRequestParams.getFrom();
-        Integer size = eventsForUserRequestParams.getSize();
+    public List<EventShortDto> getEventsCreatedByUser(EventsForUserParameters eventsForUserParameters) {
+        Long userId = eventsForUserParameters.getUserId();
+        Integer from = eventsForUserParameters.getFrom();
+        Integer size = eventsForUserParameters.getSize();
 
         checkUserExisting(userId);
 
@@ -102,16 +103,16 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public EventFullDto updateEvent(UpdateEventRequestParams updateEventRequestParams) {
-        Long userId = updateEventRequestParams.getUserId();
-        Long eventId = updateEventRequestParams.getEventId();
-        UpdateEventUserRequest updateEventUserRequest = updateEventRequestParams.getUpdateEventUserRequest();
+    public EventFullDto updateEvent(UpdateEventParameters updateEventParameters) {
+        Long userId = updateEventParameters.getUserId();
+        Long eventId = updateEventParameters.getEventId();
+        UpdateEventUserRequest updateEventUserRequest = updateEventParameters.getUpdateEventUserRequest();
 
         Event event = getEventWithCheck(eventId);
         checkUserRights(userId, event);
 
         if (!canUserUpdateEvent(event)) {
-            throw new DataIntegrityViolationException("Only pending or canceled events can be changed");
+            throw new DataIntegrityViolationException("Only pending or canceled events can be changed.");
         }
 
         UpdateEventCommonRequest commonRequest = EventMapper.userUpdateRequestToCommonRequest(updateEventUserRequest);
@@ -139,7 +140,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public EventRequestStatusUpdateResult updateRequestsForEvent(UpdateRequestsStatusRequestParams updateParams) {
+    public EventRequestStatusUpdateResult updateRequestsForEvent(UpdateRequestsStatusParameters updateParams) {
         Long userId = updateParams.getUserId();
         Long eventId = updateParams.getEventId();
         EventRequestStatusUpdateRequest statusUpdateRequest = updateParams.getEventRequestStatusUpdateRequest();
@@ -163,7 +164,7 @@ public class EventsServiceImpl implements EventsService {
 
         if (canConfirmRequestsNumber <= 0) {
             throw new DataIntegrityViolationException(String.format(
-                    "Event id=%d is full for requests.", eventId
+                    "Event id=%d is full filled for requests.", eventId
             ));
         }
 
@@ -193,7 +194,7 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventFullDto> searchEvents(SearchEventsRequestParams searchParams) {
+    public List<EventFullDto> searchEvents(SearchEventsParameters searchParams) {
         QEvent event = QEvent.event;
         List<BooleanExpression> conditions = new ArrayList<>();
         Pageable page = createPageableObject(searchParams.getFrom(), searchParams.getSize());
@@ -240,19 +241,20 @@ public class EventsServiceImpl implements EventsService {
 
             if (stateAction == AdminEventAction.REJECT_EVENT) {
                 if (eventPublishState == EventPublishState.PUBLISHED) {
-                    throw new DataIntegrityViolationException("Нельзя отменить опубликованное событие.");
+                    throw new DataIntegrityViolationException("Can't REJECT event which is PUBLISHED already.");
                 }
 
                 event.setEventPublishState(EventPublishState.CANCELED);
             } else if (stateAction == AdminEventAction.PUBLISH_EVENT) {
                 if (eventPublishState != EventPublishState.PENDING) {
-                    throw new DataIntegrityViolationException("Опубликовать можно только то событие, которое ожидает публикации.");
+                    throw new DataIntegrityViolationException("Can't PUBLISH event which is not PENDING yet.");
                 }
 
                 LocalDateTime now = Util.getNowTruncatedToSeconds();
 
                 if (now.plusHours(1).isAfter(event.getEventDate())) {
-                    throw new DataIntegrityViolationException("Нельзя опубликовать событие, до которого осталось менее 1 часа.");
+                    throw new DataIntegrityViolationException("There are less than 1 hour between publish time and " +
+                            "event time.");
                 }
 
                 event.setEventPublishState(EventPublishState.PUBLISHED);
@@ -265,7 +267,7 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventFullDto> searchPublicEvents(SearchPublicEventsRequestParams searchParams) {
+    public List<EventFullDto> searchPublicEvents(SearchPublicEventsParameters searchParams) {
         QEvent event = QEvent.event;
         List<BooleanExpression> conditions = new ArrayList<>();
         conditions.add(event.eventPublishState.eq(EventPublishState.PUBLISHED));
@@ -279,7 +281,7 @@ public class EventsServiceImpl implements EventsService {
             List<Category> categories = categoryRepository.findAllById(searchParams.getCategories());
 
             if (categories.isEmpty()) {
-                throw new ValidationException("Категории для поиска не существуют.");
+                throw new ValidationException("Categories from search query are not found.");
             }
 
             conditions.add(event.category.id.in(searchParams.getCategories()));
@@ -313,7 +315,7 @@ public class EventsServiceImpl implements EventsService {
         List<Long> resultEventIds = StreamSupport.stream(resultEvents.spliterator(), false)
                 .map(Event::getId)
                 .toList();
-        Map<Long, Long> eventsViewsMap = eventsViewsService.getEventsViewsMap(resultEventIds);
+        Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(resultEventIds);
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(resultEventIds);
         Comparator<Event> sorting = searchParams.getSort() == SortingEvents.VIEWS
                 ? (ev1, ev2) -> Long.compare(eventsViewsMap.get(ev2.getId()), eventsViewsMap.get(ev1.getId()))
@@ -334,9 +336,59 @@ public class EventsServiceImpl implements EventsService {
         Event resultEvent = eventsRepository
                 .findOne(event.id.eq(eventId).and(event.eventPublishState.eq(EventPublishState.PUBLISHED)))
                 .orElseThrow(() -> new NotFoundException(
-                        String.format("Событие с id=%d не найдено или не является опубликованным.", eventId))
+                        String.format("Event id=%d not found or is not published.", eventId))
                 );
         return createEventFullDto(resultEvent);
+    }
+
+    private Event getEventWithCheck(long eventId) {
+        return eventsRepository.findById(eventId)
+                .orElseThrow(() -> new ConflictException(String.format("Event id=%d not found.", eventId)));
+    }
+
+    private User getUserWithCheck(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ConflictException(String.format("User id=%d not found.", userId)));
+    }
+
+    private Category getCategoryWithCheck(long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ConflictException(String.format("Category id=%d not found.", categoryId)));
+    }
+
+    private void checkUserExisting(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ConflictException(String.format("User id=%d not found.", userId));
+        }
+    }
+
+    private void checkEventDateBeforeHours(LocalDateTime eventDateTime) {
+        LocalDateTime now = Util.getNowTruncatedToSeconds();
+
+        if (eventDateTime.isBefore(now.plusHours(2))) {
+            throw new ValidationException("DateTime of event must be ahead more than 2 hours.");
+        }
+    }
+
+    private void checkUserRights(long userId, Event event) {
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException(
+                    String.format("Access deny for user id=%d with event id=%d.", userId, event.getId())
+            );
+        }
+    }
+
+    private boolean canUserUpdateEvent(Event event) {
+        EventPublishState state = event.getEventPublishState();
+        return state.equals(EventPublishState.CANCELED) || state.equals(EventPublishState.PENDING);
+    }
+
+    private Pageable createPageableObject(int from, int size) {
+        if (from < 0 || size <= 0) {
+            throw new IllegalArgumentException("Parameters 'from' and 'size' can not be less then zero");
+        }
+
+        return PageRequest.of(from / size, size);
     }
 
     private void updateCommonEventProperties(Event event, UpdateEventCommonRequest commonProperties) {
@@ -362,7 +414,7 @@ public class EventsServiceImpl implements EventsService {
         }
 
         if (commonProperties.getLocation() != null) {
-            Location location = commonProperties.getLocation();
+            LocationDto location = commonProperties.getLocation();
             event.setLocationLat(location.getLat());
             event.setLocationLon(location.getLon());
         }
@@ -380,51 +432,17 @@ public class EventsServiceImpl implements EventsService {
         }
     }
 
-    private Event getEventWithCheck(long eventId) {
-        return eventsRepository.findById(eventId)
-                .orElseThrow(() -> new ConflictException(String.format("Ивент с id=%d не найден.", eventId)));
-    }
-
-    private void checkUserRights(long userId, Event event) {
-        if (!event.getInitiator().getId().equals(userId)) {
-            throw new ConflictException(
-                    String.format("Юзер id=%d не имеет доступа к событию id=%d.", userId, event.getId())
-            );
-        }
-    }
-
     private Map<Long, Long> getConfirmedRequestsMap(List<Long> eventIds) {
         return eventsRepository.getConfirmedRequestsForEvents(eventIds).stream()
                 .collect(Collectors.toMap(List::getFirst, List::getLast));
     }
 
-    private boolean canUserUpdateEvent(Event event) {
-        EventPublishState state = event.getEventPublishState();
-        return state.equals(EventPublishState.CANCELED) || state.equals(EventPublishState.PENDING);
-    }
-
-    private void checkUserExisting(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ConflictException(String.format("Юзер id=%d не найден.", userId));
-        }
-    }
-
-    private User getUserWithCheck(long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ConflictException(String.format("Юзер id=%d не найден.", userId)));
-    }
-
-    private Category getCategoryWithCheck(long categoryId) {
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ConflictException(String.format("Категория id=%d не найдена.", categoryId)));
-    }
-
     private EventFullDto createEventFullDto(Event event) {
         long id = event.getId();
-        Map<Long, Long> eventsViewsMap = eventsViewsService.getEventsViewsMap(List.of(id));
+        Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(List.of(id));
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(List.of(id));
 
-        EventDtoParams eventFullDtoParams = EventDtoParams.builder()
+        MappingEventParameters eventFullDtoParams = MappingEventParameters.builder()
                 .event(event)
                 .categoryDto(CategoryMapper.toCategoryDto(event.getCategory()))
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
@@ -435,7 +453,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private EventFullDto createEventFullDto(Event event, long views, long confirmedRequests) {
-        EventDtoParams eventFullDtoParams = EventDtoParams.builder()
+        MappingEventParameters eventFullDtoParams = MappingEventParameters.builder()
                 .event(event)
                 .categoryDto(CategoryMapper.toCategoryDto(event.getCategory()))
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
@@ -449,12 +467,12 @@ public class EventsServiceImpl implements EventsService {
         List<Long> ids = events.stream()
                 .map(Event::getId)
                 .toList();
-        Map<Long, Long> eventsViewsMap = eventsViewsService.getEventsViewsMap(ids);
+        Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(ids);
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(ids);
 
         return events.stream()
                 .map(event -> {
-                    EventDtoParams eventFullDtoParams = EventDtoParams.builder()
+                    MappingEventParameters eventFullDtoParams = MappingEventParameters.builder()
                             .event(event)
                             .categoryDto(CategoryMapper.toCategoryDto(event.getCategory()))
                             .initiator(UserMapper.toUserShortDto(event.getInitiator()))
@@ -470,12 +488,12 @@ public class EventsServiceImpl implements EventsService {
         List<Long> ids = events.stream()
                 .map(Event::getId)
                 .toList();
-        Map<Long, Long> eventsViewsMap = eventsViewsService.getEventsViewsMap(ids);
+        Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(ids);
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(ids);
 
         return events.stream()
                 .map(event -> {
-                    EventDtoParams eventDtoParams = EventDtoParams.builder()
+                    MappingEventParameters mappingEventParameters = MappingEventParameters.builder()
                             .event(event)
                             .categoryDto(CategoryMapper.toCategoryDto(event.getCategory()))
                             .initiator(UserMapper.toUserShortDto(event.getInitiator()))
@@ -483,32 +501,8 @@ public class EventsServiceImpl implements EventsService {
                             .views(eventsViewsMap.get(event.getId()))
                             .build();
 
-                    return EventMapper.toEventShortDto(eventDtoParams);
+                    return EventMapper.toEventShortDto(mappingEventParameters);
                 })
                 .toList();
-    }
-
-    private Pageable createPageableObject(int from, int size) {
-        if (from < 0 || size <= 0) {
-            throw new IllegalArgumentException("""
-                    Parameters 'from' and 'size' can not be less then zero
-                    """
-            );
-        }
-
-        return PageRequest.of(from / size, size);
-    }
-
-    private static void checkEventDateBeforeHours(LocalDateTime eventDateTime) {
-        LocalDateTime now = Util.getNowTruncatedToSeconds();
-
-        if (eventDateTime.isBefore(now.plusHours(2))) {
-            throw new ValidationException(
-                    String.format(
-                            "Field: eventDate. Error: должно содержать дату-вермя, не ранее чем через 2 часа. Value: %s",
-                            eventDateTime
-                    )
-            );
-        }
     }
 }
