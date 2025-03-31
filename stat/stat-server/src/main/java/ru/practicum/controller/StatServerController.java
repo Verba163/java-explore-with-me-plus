@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.dto.StatViewDto;
+import ru.practicum.error.exception.StatsIllegalDateTime;
 import ru.practicum.service.StatServerService;
 
 import java.time.LocalDateTime;
@@ -43,8 +44,12 @@ public class StatServerController {
             ) {
         log.info("Request to get stats: from '{}' to '{}'. Unique is '{}', uris: '{}'", start, end, unique, uris);
 
+        if (start == null || end == null) {
+            throw new StatsIllegalDateTime("Params 'end' and 'start' can not be NULL.");
+        }
+
         if (end.isBefore(start)) {
-            throw new IllegalArgumentException("Request param 'end' must be after 'start'.");
+            throw new StatsIllegalDateTime("Request param 'end' must be after 'start'.");
         }
 
         return statServerService.getStats(start, end, uris, unique);

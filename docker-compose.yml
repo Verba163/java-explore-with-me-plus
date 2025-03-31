@@ -27,10 +27,11 @@ services:
     container_name: ewm-service
     depends_on:
       - ewm-db
+      - stats-server
     ports:
       - "8080:8080"
     environment:
-      - CLIENT_URL=http://stats-server:9090
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm-main
       - SPRING_DATASOURCE_USERNAME=service
       - SPRING_DATASOURCE_PASSWORD=service
