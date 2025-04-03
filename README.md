@@ -96,7 +96,7 @@
 
 ***
 
-* `DELETE /users/{userId}/events/{eventId}/comments/{commentId}` Удаление комментария к событию (_новый эндпоинт_)
+* `DELETE /users/{userId}/comments/{commentId}` Удаление комментария к событию (_новый эндпоинт_)
 
 **Responses**
 
