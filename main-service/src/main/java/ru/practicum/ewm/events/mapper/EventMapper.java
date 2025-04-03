@@ -3,6 +3,7 @@ package ru.practicum.ewm.events.mapper;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.events.dto.EventFullDto;
+import ru.practicum.ewm.events.dto.EventFullDtoWithComments;
 import ru.practicum.ewm.events.dto.EventShortDto;
 import ru.practicum.ewm.events.dto.LocationDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
@@ -49,6 +50,30 @@ public class EventMapper {
                 .title(event.getTitle())
                 .state(event.getEventPublishState())
                 .views(eventFullDtoParams.getViews())
+                .build();
+    }
+
+    public static EventFullDtoWithComments toEventEventFullDtoWithComments(MappingEventParameters eventFullDtoParams) {
+        Event event = eventFullDtoParams.getEvent();
+
+        return EventFullDtoWithComments.builder()
+                .id(event.getId())
+                .annotation(event.getAnnotation())
+                .category(eventFullDtoParams.getCategoryDto())
+                .confirmedRequests(eventFullDtoParams.getConfirmedRequests())
+                .createdOn(event.getCreatedOn())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .initiator(eventFullDtoParams.getInitiator())
+                .location(new LocationDto(event.getLocationLat(), event.getLocationLon()))
+                .paid(event.getPaid())
+                .participantLimit(event.getParticipantLimit())
+                .publishedOn(event.getPublishedOn())
+                .requestModeration(event.getRequestModeration())
+                .title(event.getTitle())
+                .state(event.getEventPublishState())
+                .views(eventFullDtoParams.getViews())
+                .comments(eventFullDtoParams.getComments())
                 .build();
     }
 

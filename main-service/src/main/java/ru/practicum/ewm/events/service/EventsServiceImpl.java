@@ -10,11 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.storage.CategoryRepository;
+import ru.practicum.ewm.comments.dto.CommentShortDto;
+import ru.practicum.ewm.comments.mapper.CommentMapper;
+import ru.practicum.ewm.comments.storage.CommentRepository;
 import ru.practicum.ewm.error.exception.ConflictException;
 import ru.practicum.ewm.error.exception.DataIntegrityViolationException;
 import ru.practicum.ewm.error.exception.NotFoundException;
 import ru.practicum.ewm.error.exception.ValidationException;
 import ru.practicum.ewm.events.dto.EventFullDto;
+import ru.practicum.ewm.events.dto.EventFullDtoWithComments;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
@@ -24,6 +28,7 @@ import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.UpdateEventCommonRequest;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.events.dto.parameters.EventsForUserParameters;
+import ru.practicum.ewm.events.dto.parameters.GetAllCommentsParameters;
 import ru.practicum.ewm.events.dto.parameters.MappingEventParameters;
 import ru.practicum.ewm.events.dto.parameters.SearchEventsParameters;
 import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsParameters;
@@ -53,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -64,6 +70,7 @@ public class EventsServiceImpl implements EventsService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
 
     private final EventsViewsGetter eventsViewsGetter;
 
@@ -317,9 +324,14 @@ public class EventsServiceImpl implements EventsService {
                 .toList();
         Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(resultEventIds);
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(resultEventIds);
-        Comparator<Event> sorting = searchParams.getSort() == SortingEvents.VIEWS
-                ? (ev1, ev2) -> Long.compare(eventsViewsMap.get(ev2.getId()), eventsViewsMap.get(ev1.getId()))
-                : Comparator.comparing(Event::getEventDate);
+        Comparator<Event> sorting = Comparator.comparing(Event::getEventDate);
+
+        if (searchParams.getSort() == SortingEvents.VIEWS) {
+            sorting = (ev1, ev2) -> Long.compare(eventsViewsMap.get(ev2.getId()), eventsViewsMap.get(ev1.getId()));
+        } else if (searchParams.getSort() == SortingEvents.COMMENTS) {
+            Map<Long, Long> commentsMap = getCommentsNumberMap(resultEventIds);
+            sorting = (ev1, ev2) -> Long.compare(commentsMap.get(ev2.getId()), commentsMap.get(ev1.getId()));
+        }
 
         return StreamSupport.stream(resultEvents.spliterator(), false)
                 .sorted(sorting)
@@ -331,14 +343,24 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     @Transactional(readOnly = true)
-    public EventFullDto getPublicEventById(Long eventId) {
+    public EventFullDtoWithComments getPublicEventById(Long eventId) {
         QEvent event = QEvent.event;
         Event resultEvent = eventsRepository
                 .findOne(event.id.eq(eventId).and(event.eventPublishState.eq(EventPublishState.PUBLISHED)))
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Event id=%d not found or is not published.", eventId))
                 );
-        return createEventFullDto(resultEvent);
+        return createEventFullDtoWithComments(resultEvent);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentShortDto> getAllEventComments(GetAllCommentsParameters parameters) {
+        Event event = getEventWithCheck(parameters.getEventId());
+        return commentRepository.findPageableCommentsForEvent(event.getId(), parameters.getFrom(), parameters.getSize())
+                .stream()
+                .map(CommentMapper::toCommentShortDto)
+                .toList();
     }
 
     private Event getEventWithCheck(long eventId) {
@@ -437,6 +459,14 @@ public class EventsServiceImpl implements EventsService {
                 .collect(Collectors.toMap(List::getFirst, List::getLast));
     }
 
+    private Map<Long, Long> getCommentsNumberMap(List<Long> eventIds) {
+        Map<Long, Long> commentsNumberMap = commentRepository.getCommentsNumberForEvents(eventIds).stream()
+                .collect(Collectors.toMap(List::getFirst, List::getLast));
+
+        return eventIds.stream()
+                .collect(Collectors.toMap(Function.identity(), id -> commentsNumberMap.getOrDefault(id, 0L)));
+    }
+
     private EventFullDto createEventFullDto(Event event) {
         long id = event.getId();
         Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(List.of(id));
@@ -450,6 +480,25 @@ public class EventsServiceImpl implements EventsService {
                 .views(eventsViewsMap.get(id))
                 .build();
         return EventMapper.toEventFullDto(eventFullDtoParams);
+    }
+
+    private EventFullDtoWithComments createEventFullDtoWithComments(Event event) {
+        long id = event.getId();
+        Map<Long, Long> eventsViewsMap = eventsViewsGetter.getEventsViewsMap(List.of(id));
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(List.of(id));
+        List<CommentShortDto> comments = commentRepository.findFirstCommentsForEvent(id, 5L).stream()
+                .map(CommentMapper::toCommentShortDto)
+                .toList();
+
+        MappingEventParameters eventFullDtoParams = MappingEventParameters.builder()
+                .event(event)
+                .categoryDto(CategoryMapper.toCategoryDto(event.getCategory()))
+                .initiator(UserMapper.toUserShortDto(event.getInitiator()))
+                .confirmedRequests(confirmedRequestsMap.get(id))
+                .views(eventsViewsMap.get(id))
+                .comments(comments)
+                .build();
+        return EventMapper.toEventEventFullDtoWithComments(eventFullDtoParams);
     }
 
     private EventFullDto createEventFullDto(Event event, long views, long confirmedRequests) {
