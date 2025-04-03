@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.ewm.comments.model.Comment;
+import ru.practicum.ewm.comments.model.CommentStatus;
 
 import java.util.List;
 
@@ -35,4 +36,14 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
        LIMIT ?3
        """)
     List<Comment> findPageableCommentsForEvent(Long eventId, Integer offset, Integer size);
+
+    @Query(nativeQuery = true, value = """
+       SELECT c.*
+       FROM comments c
+       WHERE (?1 IS NULL OR c.status=?1)
+       ORDER BY c.created_on DESC
+       OFFSET ?2
+       LIMIT ?3
+       """)
+    List<Comment> findPageableCommentsForAdmin(CommentStatus status, Integer offset, Integer size);
 }
