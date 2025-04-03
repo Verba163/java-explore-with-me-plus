@@ -6,8 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.category.dto.CategoryDto;
+import ru.practicum.ewm.comments.dto.CommentShortDto;
 import ru.practicum.ewm.events.model.Event;
 import ru.practicum.ewm.user.dto.UserShortDto;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,4 +22,5 @@ public class MappingEventParameters {
     UserShortDto initiator;
     Long confirmedRequests;
     Long views;
+    List<CommentShortDto> comments;
 }

@@ -7,12 +7,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.ewm.client.StatClient;
+import ru.practicum.ewm.comments.dto.CommentShortDto;
 import ru.practicum.ewm.events.constants.EventsConstants;
-import ru.practicum.ewm.events.dto.*;
-import ru.practicum.ewm.events.dto.parameters.*;
+import ru.practicum.ewm.events.dto.EventFullDto;
+import ru.practicum.ewm.events.dto.EventFullDtoWithComments;
+import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
+import ru.practicum.ewm.events.dto.EventShortDto;
+import ru.practicum.ewm.events.dto.NewEventDto;
+import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
+import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.events.dto.parameters.EventsForUserParameters;
+import ru.practicum.ewm.events.dto.parameters.GetAllCommentsParameters;
+import ru.practicum.ewm.events.dto.parameters.SearchEventsParameters;
+import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsParameters;
+import ru.practicum.ewm.events.dto.parameters.UpdateEventParameters;
+import ru.practicum.ewm.events.dto.parameters.UpdateRequestsStatusParameters;
 import ru.practicum.ewm.events.enums.SortingEvents;
 import ru.practicum.ewm.events.service.EventsService;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
@@ -21,7 +41,13 @@ import ru.practicum.ewm.util.Util;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.practicum.ewm.events.constants.EventsConstants.*;
+import static ru.practicum.ewm.events.constants.EventsConstants.EVENT_ID;
+import static ru.practicum.ewm.events.constants.EventsConstants.EVENT_ID_PATH;
+import static ru.practicum.ewm.events.constants.EventsConstants.PRIVATE_API_PREFIX_USER_ID_EVENT_ID;
+import static ru.practicum.ewm.events.constants.EventsConstants.PRIVATE_API_USER_EVENT_REQUESTS;
+import static ru.practicum.ewm.events.constants.EventsConstants.PUBLIC_API_PREFIX_COMMENTS;
+import static ru.practicum.ewm.events.constants.EventsConstants.PUBLIC_API_PREFIX_USER_ID;
+import static ru.practicum.ewm.events.constants.EventsConstants.USER_ID;
 
 @RestController
 @Slf4j
@@ -186,11 +212,26 @@ public class EventsController {
 
     @GetMapping(EventsConstants.PUBLIC_API_PREFIX + EVENT_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto getPublicEventById(@PathVariable(EVENT_ID) Long eventId, HttpServletRequest request) {
+    public EventFullDtoWithComments getPublicEventById(@PathVariable(EVENT_ID) Long eventId, HttpServletRequest request) {
         log.info("Request: get public event with id={}", eventId);
-        EventFullDto result = eventsService.getPublicEventById(eventId);
+        EventFullDtoWithComments result = eventsService.getPublicEventById(eventId);
         hitStat(request);
         return result;
+    }
+
+    @GetMapping(PUBLIC_API_PREFIX_COMMENTS )
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentShortDto> getAllEventComments(
+            @PathVariable(EVENT_ID) Long eventId,
+            @RequestParam(required = false, defaultValue = "0") Integer from,
+            @RequestParam(required = false, defaultValue = "10") Integer size) {
+        GetAllCommentsParameters parameters = GetAllCommentsParameters.builder()
+                .eventId(eventId)
+                .from(from)
+                .size(size)
+                .build();
+        log.info("Request: get all comments for event id={}.Parameters={}", eventId, parameters);
+        return eventsService.getAllEventComments(parameters);
     }
     // endregion
 

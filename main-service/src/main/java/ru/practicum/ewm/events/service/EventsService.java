@@ -1,11 +1,14 @@
 package ru.practicum.ewm.events.service;
 
+import ru.practicum.ewm.comments.dto.CommentShortDto;
 import ru.practicum.ewm.events.dto.EventFullDto;
+import ru.practicum.ewm.events.dto.EventFullDtoWithComments;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.dto.parameters.EventsForUserParameters;
+import ru.practicum.ewm.events.dto.parameters.GetAllCommentsParameters;
 import ru.practicum.ewm.events.dto.parameters.SearchEventsParameters;
 import ru.practicum.ewm.events.dto.parameters.SearchPublicEventsParameters;
 import ru.practicum.ewm.events.dto.parameters.UpdateEventParameters;
@@ -33,5 +36,7 @@ public interface EventsService {
 
     List<EventFullDto> searchPublicEvents(SearchPublicEventsParameters searchPublicEventsParameters);
 
-    EventFullDto getPublicEventById(Long eventId);
+    EventFullDtoWithComments getPublicEventById(Long eventId);
+
+    List<CommentShortDto> getAllEventComments(GetAllCommentsParameters parameters);
 }
