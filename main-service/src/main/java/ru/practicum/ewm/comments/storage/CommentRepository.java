@@ -5,11 +5,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.ewm.comments.model.Comment;
 import ru.practicum.ewm.comments.model.CommentStatus;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 import java.util.List;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, Long> {
+public interface CommentRepository extends JpaRepository<Comment, Long>,QuerydslPredicateExecutor<Comment> {
     @Query(nativeQuery = true, value = """
        SELECT c.event_id, COUNT(c.id)
        FROM comments c
@@ -46,4 +47,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
        LIMIT ?3
        """)
     List<Comment> findPageableCommentsForAdmin(CommentStatus status, Integer offset, Integer size);
+
+    boolean existsByAuthorIdAndEventId(Long userId, Long eventId);
 }
