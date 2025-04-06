@@ -143,9 +143,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> getCommentsForAdmin(GetCommentsForAdminParameters parameters) {
         CommentStatus status = parameters.getStatus();
-        Integer size = parameters.getSize();
-        Integer from = parameters.getFrom();
-        return commentRepository.findPageableCommentsForAdmin(status, from, size).stream()
+        Pageable pageable = createPageableObject(parameters.getFrom(), parameters.getSize());
+        return commentRepository.findPageableCommentsForAdmin(status, pageable).stream()
                 .map(CommentMapper::toCommentDto)
                 .toList();
     }
