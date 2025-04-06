@@ -10,6 +10,7 @@ import ru.practicum.ewm.comments.dto.UpdateCommentDto;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateCommentParameters {
+
     Long userId;
     Long commentId;
     UpdateCommentDto updateCommentDto;
