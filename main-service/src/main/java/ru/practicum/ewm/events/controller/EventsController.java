@@ -219,7 +219,7 @@ public class EventsController {
         return result;
     }
 
-    @GetMapping(PUBLIC_API_PREFIX_COMMENTS )
+    @GetMapping(PUBLIC_API_PREFIX_COMMENTS)
     @ResponseStatus(HttpStatus.OK)
     public List<CommentShortDto> getAllEventComments(
             @PathVariable(EVENT_ID) Long eventId,

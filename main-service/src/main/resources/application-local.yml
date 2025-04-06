@@ -31,6 +31,9 @@ logging:
       orm.jpa.JpaTransactionManager: WARN
       transaction: WARN
       transaction.interceptor: WARN
+    org.hibernate:
+      SQL: DEBUG
+      orm.jdbc.bind: trace
 
   server:
     port: 8080

@@ -1,11 +1,13 @@
 package ru.practicum.ewm.comments.storage;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.ewm.comments.model.Comment;
 import ru.practicum.ewm.comments.model.CommentStatus;
-import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 import java.util.List;
 
@@ -38,15 +40,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long>,Querydsl
        """)
     List<Comment> findPageableCommentsForEvent(Long eventId, Integer offset, Integer size);
 
-    @Query(nativeQuery = true, value = """
-       SELECT c.*
-       FROM comments c
-       WHERE (?1 IS NULL OR c.status=?1)
-       ORDER BY c.created_on DESC
-       OFFSET ?2
-       LIMIT ?3
+    @Query("""
+       SELECT c
+       FROM Comment c
+       WHERE (:status IS NULL OR c.status=:status)
+       ORDER BY c.createdOn DESC
        """)
-    List<Comment> findPageableCommentsForAdmin(CommentStatus status, Integer offset, Integer size);
+    List<Comment> findPageableCommentsForAdmin(@Param("status") CommentStatus status, Pageable pageable);
 
     boolean existsByAuthorIdAndEventId(Long userId, Long eventId);
 }
