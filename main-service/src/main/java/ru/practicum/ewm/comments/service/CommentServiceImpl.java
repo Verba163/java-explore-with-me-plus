@@ -33,7 +33,6 @@ import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 import ru.practicum.ewm.util.Util;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,10 +55,6 @@ public class CommentServiceImpl implements CommentService {
         if (request == null || !request.getStatus().equals(RequestStatus.CONFIRMED)) {
             throw new ValidationException("You cannot leave a comment because " +
                     "you did not leave a request to participate or your request was rejected.");
-        }
-
-        if (LocalDateTime.now().isBefore(event.getEventDate())) {
-            throw new ValidationException("You cannot leave a comment because the event has not yet started.");
         }
 
         if (commentRepository.existsByAuthorIdAndEventId(userId, newCommentDto.getEventId())) {
