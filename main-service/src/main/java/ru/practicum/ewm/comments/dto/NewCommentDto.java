@@ -1,5 +1,6 @@
 package ru.practicum.ewm.comments.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -14,6 +15,8 @@ public class NewCommentDto {
 
     @NotNull
     Long eventId;
-    @Size(min = 5, max = 255)
+
+    @NotBlank
+    @Size(min = 5, max = 255, message = "Comment can not be less then 5 and more then 255 symbols")
     String text;
 }

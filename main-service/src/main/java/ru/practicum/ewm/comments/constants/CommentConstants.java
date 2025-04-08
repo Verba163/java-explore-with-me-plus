@@ -7,8 +7,6 @@ public class CommentConstants {
     public static final String ADMIN_API_PREFIX = "/admin/comments";
     public static final String ADMIN_API_PREFIX_COMMENT_ID = "/admin/comments/{comment-id}";
 
-    public static final String PUBLIC_API_PREFIX = "/comments";
-
     public static final String USER_ID = "user-id";
     public static final String COMMENT_ID = "comment-id";
 }

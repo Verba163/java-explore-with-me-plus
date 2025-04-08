@@ -173,9 +173,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Pageable createPageableObject(Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new ValidationException(String.format("Invalid pagination parameters: from=%d, size=%d", from,size));
-        }
         return PageRequest.of(from / size, size);
     }
 }
